@@ -1,0 +1,1303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Billing - Sunrise Hospital EMR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Medical-grade Color Palette */
+        :root {
+            --primary-blue: #1976d2;
+            --light-blue: #64b5f6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --error-red: #f44336;
+            --background: #f8f9fa;
+            --card-white: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --border-primary: #1976d2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 64px;
+        }
+
+        .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+        .hospital-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 260px;
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-right-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            padding: 2rem;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--card-white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            border-left: 4px solid var(--primary-blue);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card.success { border-left-color: var(--success-green); }
+        .stat-card.warning { border-left-color: var(--warning-orange); }
+        .stat-card.error { border-left-color: var(--error-red); }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.2rem;
+        }
+
+        .stat-icon.primary { background: var(--primary-blue); }
+        .stat-icon.success { background: var(--success-green); }
+        .stat-icon.warning { background: var(--warning-orange); }
+        .stat-icon.error { background: var(--error-red); }
+
+        .stat-number {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .stat-change {
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .stat-change.positive { color: var(--success-green); }
+        .stat-change.negative { color: var(--error-red); }
+
+        /* Main Layout */
+        .billing-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 2rem;
+        }
+
+        /* Bill Details */
+        .bill-details {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .bill-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bill-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .bill-number {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .bill-content {
+            padding: 1.5rem;
+        }
+
+        .patient-billing-info {
+            background: var(--background);
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .info-item {
+            margin-bottom: 0.75rem;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 0.95rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        /* Services Table */
+        .services-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 2rem;
+        }
+
+        .services-table th,
+        .services-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.9rem;
+        }
+
+        .services-table th {
+            background: var(--background);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .services-table tr:hover {
+            background: rgba(25, 118, 210, 0.02);
+        }
+
+        .service-code {
+            font-family: 'Courier New', monospace;
+            background: var(--background);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+        }
+
+        /* Bill Summary */
+        .bill-summary {
+            background: var(--background);
+            border-radius: 6px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+
+        .summary-row.total {
+            font-weight: 700;
+            font-size: 1.1rem;
+            padding-top: 0.75rem;
+            border-top: 2px solid var(--border-light);
+            color: var(--primary-blue);
+        }
+
+        /* Payment Panel */
+        .payment-panel {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .panel-content {
+            padding: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .payment-method {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .payment-option {
+            flex: 1;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .payment-option.active {
+            border-color: var(--primary-blue);
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+        }
+
+        .payment-option:hover {
+            border-color: var(--primary-blue);
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left-color: var(--warning-orange);
+            color: var(--warning-orange);
+        }
+
+        .alert-info {
+            background: rgba(25, 118, 210, 0.1);
+            border-left-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-paid {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-green);
+        }
+
+        .status-pending {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-orange);
+        }
+
+        .status-overdue {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error-red);
+        }
+
+        .status-partial {
+            background: rgba(25, 118, 210, 0.1);
+            color: var(--primary-blue);
+        }
+
+        /* Recent Bills */
+        .recent-bills {
+            margin-top: 2rem;
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .bills-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bill-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .bill-item:hover {
+            background: rgba(25, 118, 210, 0.02);
+        }
+
+        .bill-item:last-child {
+            border-bottom: none;
+        }
+
+        .bill-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .bill-patient {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .bill-amount {
+            font-weight: 700;
+            color: var(--primary-blue);
+            font-size: 1.1rem;
+        }
+
+        .bill-details-item {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error-red);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: 260px;
+            background: var(--card-white);
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .billing-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+       <img class="logo-placeholder" src="sunrise.png" />
+            <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Dr. Archana Prasanth</span>
+            <div class="user-avatar">AP</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="patient-management.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Patient Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="appointments.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="medical-records.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"/>
+                    </svg>
+                    Medical Records
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="prescriptions.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"/>
+                    </svg>
+                    Prescriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="lab-radiology.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"/>
+                    </svg>
+                    Lab & Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="billing.html" class="nav-link active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"/>
+                    </svg>
+                    Billing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                    </svg>
+                    Reports & Analytics
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Billing & Revenue Management</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Insurance Claims
+                </button>
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    New Invoice
+                </button>
+            </div>
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number">₹2,45,000</div>
+                        <div class="stat-label">Today's Revenue</div>
+                        <div class="stat-change positive">
+                            ↗ +15% from yesterday
+                        </div>
+                    </div>
+                    <div class="stat-icon primary">💰</div>
+                </div>
+            </div>
+
+            <div class="stat-card success">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number">₹18,65,000</div>
+                        <div class="stat-label">Month to Date</div>
+                        <div class="stat-change positive">
+                            ↗ +8% vs last month
+                        </div>
+                    </div>
+                    <div class="stat-icon success">📊</div>
+                </div>
+            </div>
+
+            <div class="stat-card warning">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number">₹4,25,000</div>
+                        <div class="stat-label">Outstanding Receivables</div>
+                        <div class="stat-change negative">
+                            ↗ 15 overdue accounts
+                        </div>
+                    </div>
+                    <div class="stat-icon warning">⏰</div>
+                </div>
+            </div>
+
+            <div class="stat-card error">
+                <div class="stat-header">
+                    <div>
+                        <div class="stat-number">₹85,000</div>
+                        <div class="stat-label">Insurance Pending</div>
+                        <div class="stat-change negative">
+                            ↗ 8 claims in review
+                        </div>
+                    </div>
+                    <div class="stat-icon error">🏥</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Billing Layout -->
+        <div class="billing-layout">
+            <!-- Bill Details -->
+            <div class="bill-details">
+                <div class="bill-header">
+                    <div>
+                        <div class="bill-title">Patient Invoice</div>
+                        <div class="bill-number">Invoice #INV-2025-001247</div>
+                    </div>
+                    <div>
+                        <span class="status-badge status-pending">Pending Payment</span>
+                    </div>
+                </div>
+
+                <div class="bill-content">
+                    <div class="alert alert-warning">
+                        <strong>⚠️ Insurance Verification:</strong> Patient's insurance coverage confirmed. Pre-authorization approved for cardiac procedures.
+                    </div>
+
+                    <div class="patient-billing-info">
+                        <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Patient Information</h3>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">Patient Name</div>
+                                <div class="info-value">Kuttiyamma</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">MRN</div>
+                                <div class="info-value">HOS-9528</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Date of Birth</div>
+                                <div class="info-value">01/Jan/1955</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Insurance Provider</div>
+                                <div class="info-value">Kerala State Health Insurance</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Policy Number</div>
+                                <div class="info-value">KSHI-789456123</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Admission Date</div>
+                                <div class="info-value">22/Jun/2025</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Discharge Date</div>
+                                <div class="info-value">26/Jun/2025</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Length of Stay</div>
+                                <div class="info-value">4 days</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h3 style="margin-bottom: 1rem; color: var(--text-primary);">Service Details</h3>
+                    <table class="services-table">
+                        <thead>
+                            <tr>
+                                <th>Service Code</th>
+                                <th>Description</th>
+                                <th>Quantity</th>
+                                <th>Rate (₹)</th>
+                                <th>Amount (₹)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="service-code">99223</span></td>
+                                <td>Initial Hospital Care - High Complexity</td>
+                                <td>1</td>
+                                <td>8,500</td>
+                                <td>8,500</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">93000</span></td>
+                                <td>Electrocardiogram (ECG)</td>
+                                <td>3</td>
+                                <td>1,200</td>
+                                <td>3,600</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">93303</span></td>
+                                <td>Transthoracic Echocardiogram</td>
+                                <td>1</td>
+                                <td>6,500</td>
+                                <td>6,500</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">92928</span></td>
+                                <td>Percutaneous Coronary Intervention (PCI)</td>
+                                <td>1</td>
+                                <td>85,000</td>
+                                <td>85,000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">80053</span></td>
+                                <td>Comprehensive Metabolic Panel</td>
+                                <td>2</td>
+                                <td>1,800</td>
+                                <td>3,600</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">85025</span></td>
+                                <td>Complete Blood Count</td>
+                                <td>2</td>
+                                <td>800</td>
+                                <td>1,600</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">84484</span></td>
+                                <td>Troponin Levels</td>
+                                <td>3</td>
+                                <td>2,200</td>
+                                <td>6,600</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">71020</span></td>
+                                <td>Chest X-Ray</td>
+                                <td>1</td>
+                                <td>1,500</td>
+                                <td>1,500</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">99232</span></td>
+                                <td>Subsequent Hospital Care</td>
+                                <td>3</td>
+                                <td>4,200</td>
+                                <td>12,600</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">99238</span></td>
+                                <td>Hospital Discharge Management</td>
+                                <td>1</td>
+                                <td>3,800</td>
+                                <td>3,800</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">00560</span></td>
+                                <td>Room & Board - CCU (4 days)</td>
+                                <td>4</td>
+                                <td>8,500</td>
+                                <td>34,000</td>
+                            </tr>
+                            <tr>
+                                <td><span class="service-code">J0152</span></td>
+                                <td>Medications & Pharmacy</td>
+                                <td>1</td>
+                                <td>12,800</td>
+                                <td>12,800</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="bill-summary">
+                        <div class="summary-row">
+                            <span>Subtotal:</span>
+                            <span>₹1,80,100</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Hospital Service Tax (5%):</span>
+                            <span>₹9,005</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Medical Equipment Charges:</span>
+                            <span>₹5,500</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Administrative Fees:</span>
+                            <span>₹2,500</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total Amount:</span>
+                            <span>₹1,97,105</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Insurance Coverage (80%):</span>
+                            <span style="color: var(--success-green);">-₹1,57,684</span>
+                        </div>
+                        <div class="summary-row total" style="color: var(--error-red);">
+                            <span>Patient Responsibility:</span>
+                            <span>₹39,421</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Panel -->
+            <div class="payment-panel">
+                <div class="panel-header">
+                    <h3 class="panel-title">Payment Processing</h3>
+                    <span class="status-badge status-pending">₹39,421 Due</span>
+                </div>
+
+                <div class="panel-content">
+                    <div class="alert alert-info">
+                        <strong>💳 Payment Options:</strong> Accept cash, card, UPI, insurance, and installment plans.
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Payment Method</label>
+                        <div class="payment-method">
+                            <div class="payment-option active" onclick="selectPaymentMethod(this, 'cash')">Cash</div>
+                            <div class="payment-option" onclick="selectPaymentMethod(this, 'card')">Card</div>
+                            <div class="payment-option" onclick="selectPaymentMethod(this, 'upi')">UPI</div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Amount to Pay</label>
+                        <input type="text" class="form-input" value="₹39,421" id="paymentAmount">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Payment Type</label>
+                        <select class="form-select" id="paymentType">
+                            <option>Full Payment</option>
+                            <option>Partial Payment</option>
+                            <option>Installment Plan</option>
+                            <option>Insurance Claim</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Reference Number</label>
+                        <input type="text" class="form-input" placeholder="Transaction/Receipt ID">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Notes</label>
+                        <textarea class="form-textarea" rows="3" placeholder="Payment notes or special instructions"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1.5rem;">
+                        <button class="btn btn-secondary" style="flex: 1;">Save Draft</button>
+                        <button class="btn btn-success" style="flex: 1;" onclick="processPayment()">Process Payment</button>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid var(--border-light);">
+                        <h4 style="font-size: 1rem; margin-bottom: 1rem; color: var(--text-primary);">Quick Actions</h4>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            <button class="btn btn-outline btn-sm">Print Invoice</button>
+                            <button class="btn btn-outline btn-sm">Email to Patient</button>
+                            <button class="btn btn-outline btn-sm">Generate Receipt</button>
+                            <button class="btn btn-outline btn-sm">Submit Insurance Claim</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bills -->
+        <div class="recent-bills">
+            <div class="bills-header">
+                <h3 class="panel-title">Recent Billing Activity</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <select class="form-select" style="width: auto;">
+                        <option>All Patients</option>
+                        <option>Pending Payments</option>
+                        <option>Overdue Accounts</option>
+                        <option>Insurance Claims</option>
+                    </select>
+                    <button class="btn btn-outline">View All Bills</button>
+                </div>
+            </div>
+
+            <div class="bill-item">
+                <div class="bill-item-header">
+                    <div class="bill-patient">A A Parikutty (HOS-8717)</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-paid">Paid</span>
+                        <div class="bill-amount">₹15,680</div>
+                    </div>
+                </div>
+                <div class="bill-details-item">
+                    Cardiology Consultation • 24/Jun/2025 • Insurance: 70% covered
+                </div>
+            </div>
+
+            <div class="bill-item">
+                <div class="bill-item-header">
+                    <div class="bill-patient">Mary Thomas (HOS-1789)</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-pending">Pending</span>
+                        <div class="bill-amount">₹28,450</div>
+                    </div>
+                </div>
+                <div class="bill-details-item">
+                    Heart Failure Management • 23/Jun/2025 • Insurance verification pending
+                </div>
+            </div>
+
+            <div class="bill-item">
+                <div class="bill-item-header">
+                    <div class="bill-patient">Rajesh Kumar (HOS-1287)</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-partial">Partial</span>
+                        <div class="bill-amount">₹42,300</div>
+                    </div>
+                </div>
+                <div class="bill-details-item">
+                    Chest Pain Evaluation • 22/Jun/2025 • ₹20,000 paid, ₹22,300 outstanding
+                </div>
+            </div>
+
+            <div class="bill-item">
+                <div class="bill-item-header">
+                    <div class="bill-patient">Priya Menon (HOS-9845)</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-overdue">Overdue</span>
+                        <div class="bill-amount">₹18,900</div>
+                    </div>
+                </div>
+                <div class="bill-details-item">
+                    New Patient Consultation • 15/Jun/2025 • Due date: 20/Jun/2025
+                </div>
+            </div>
+
+            <div class="bill-item">
+                <div class="bill-item-header">
+                    <div class="bill-patient">Mohanan P K (HOS-9158)</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-paid">Paid</span>
+                        <div class="bill-amount">₹12,750</div>
+                    </div>
+                </div>
+                <div class="bill-details-item">
+                    Follow-up Visit • 21/Jun/2025 • Cash payment received
+                </div>
+            </div>
+
+            <div class="bill-item">
+                <div class="bill-item-header">
+                    <div class="bill-patient">Nalini Krishnan (HOS-9695)</div>
+                    <div style="display: flex; align-items: center; gap: 1rem;">
+                        <span class="status-badge status-pending">Pending</span>
+                        <div class="bill-amount">₹35,200</div>
+                    </div>
+                </div>
+                <div class="bill-details-item">
+                    Diabetes + Cardiac Assessment • 20/Jun/2025 • Insurance pre-auth required
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Sunrise Hospital - Erattupetta. EMR System designed and developed by <strong>Qatalyst LLP</strong></p>
+    </footer>
+
+    <script>
+        function selectPaymentMethod(element, method) {
+            // Remove active class from all payment options
+            document.querySelectorAll('.payment-option').forEach(option => {
+                option.classList.remove('active');
+            });
+            
+            // Add active class to selected option
+            element.classList.add('active');
+            
+            console.log('Selected payment method:', method);
+        }
+
+        function processPayment() {
+            const paymentAmount = document.getElementById('paymentAmount').value;
+            const paymentType = document.getElementById('paymentType').value;
+            const paymentMethod = document.querySelector('.payment-option.active').textContent;
+            
+            const btn = event.target;
+            btn.style.transform = 'scale(0.95)';
+            btn.textContent = 'Processing...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.style.transform = '';
+                btn.disabled = false;
+                btn.textContent = '✓ Payment Processed';
+                btn.classList.remove('btn-success');
+                btn.classList.add('btn-secondary');
+                
+                // Update bill status
+                const statusBadge = document.querySelector('.bill-header .status-badge');
+                statusBadge.textContent = 'Paid';
+                statusBadge.classList.remove('status-pending');
+                statusBadge.classList.add('status-paid');
+                
+                // Show success alert
+                const alertDiv = document.createElement('div');
+                alertDiv.className = 'alert alert-success';
+                alertDiv.innerHTML = `<strong>✓ Payment Successful:</strong> ${paymentAmount} received via ${paymentMethod}. Receipt generated.`;
+                
+                const billContent = document.querySelector('.bill-content');
+                billContent.insertBefore(alertDiv, billContent.firstChild);
+                
+                // Reset button after 3 seconds
+                setTimeout(() => {
+                    btn.textContent = 'Process Payment';
+                    btn.classList.remove('btn-secondary');
+                    btn.classList.add('btn-success');
+                }, 3000);
+            }, 2000);
+            
+            console.log(`Processing payment: ${paymentAmount} via ${paymentMethod} (${paymentType})`);
+        }
+
+        // Form input focus effects
+        document.querySelectorAll('.form-input, .form-textarea, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--primary-blue)';
+                this.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = 'var(--border-light)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Bill item click functionality
+        document.querySelectorAll('.bill-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const patientName = this.querySelector('.bill-patient').textContent;
+                const billAmount = this.querySelector('.bill-amount').textContent;
+                
+                console.log(`Viewing bill for: ${patientName} - ${billAmount}`);
+                
+                // Highlight selected bill
+                document.querySelectorAll('.bill-item').forEach(bill => {
+                    bill.style.background = '';
+                });
+                this.style.background = 'rgba(25, 118, 210, 0.05)';
+            });
+        });
+
+        // Quick action buttons
+        document.querySelectorAll('.btn-outline').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                
+                this.style.transform = 'scale(0.95)';
+                this.textContent = 'Processing...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.style.transform = '';
+                    this.disabled = false;
+                    
+                    switch(action) {
+                        case 'Print Invoice':
+                            this.textContent = '✓ Printed';
+                            break;
+                        case 'Email to Patient':
+                            this.textContent = '✓ Email Sent';
+                            break;
+                        case 'Generate Receipt':
+                            this.textContent = '✓ Receipt Generated';
+                            break;
+                        case 'Submit Insurance Claim':
+                            this.textContent = '✓ Claim Submitted';
+                            break;
+                        default:
+                            this.textContent = action;
+                    }
+                    
+                    // Reset after 2 seconds
+                    setTimeout(() => {
+                        this.textContent = action;
+                    }, 2000);
+                }, 1500);
+                
+                console.log(`Action: ${action}`);
+            });
+        });
+
+        // Real-time revenue updates simulation
+        setInterval(() => {
+            if (Math.random() > 0.9) {
+                const todayRevenue = document.querySelector('.stat-card .stat-number');
+                if (todayRevenue) {
+                    const current = parseInt(todayRevenue.textContent.replace(/[₹,]/g, ''));
+                    const increase = Math.floor(Math.random() * 5000) + 1000;
+                    const newAmount = current + increase;
+                    todayRevenue.textContent = `₹${newAmount.toLocaleString('en-IN')}`;
+                }
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
