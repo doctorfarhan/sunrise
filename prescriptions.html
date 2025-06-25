@@ -1,0 +1,1083 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prescriptions - Sunrise Hospital EMR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Medical-grade Color Palette */
+        :root {
+            --primary-blue: #1976d2;
+            --light-blue: #64b5f6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --error-red: #f44336;
+            --background: #f8f9fa;
+            --card-white: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --border-primary: #1976d2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 64px;
+        }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+        .hospital-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 260px;
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-right-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            padding: 2rem;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Prescription Layout */
+        .prescription-layout {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        /* New Prescription Form */
+        .prescription-form {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
+            color: white;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .form-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .patient-info {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .form-content {
+            padding: 2rem;
+        }
+
+        .form-step {
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .form-step:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+        }
+
+        .step-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .step-number {
+            background: var(--primary-blue);
+            color: white;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .drug-search {
+            position: relative;
+        }
+
+        .search-results {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--card-white);
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            box-shadow: var(--shadow-md);
+            max-height: 200px;
+            overflow-y: auto;
+            z-index: 100;
+            display: none;
+        }
+
+        .search-result-item {
+            padding: 0.75rem;
+            cursor: pointer;
+            border-bottom: 1px solid var(--border-light);
+            transition: background-color 0.2s ease;
+        }
+
+        .search-result-item:hover {
+            background: rgba(25, 118, 210, 0.05);
+        }
+
+        .search-result-item:last-child {
+            border-bottom: none;
+        }
+
+        .drug-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .drug-details {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .dosage-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+        }
+
+        .alert-danger {
+            background: rgba(244, 67, 54, 0.1);
+            border-left-color: var(--error-red);
+            color: var(--error-red);
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left-color: var(--warning-orange);
+            color: var(--warning-orange);
+        }
+
+        .alert-info {
+            background: rgba(25, 118, 210, 0.1);
+            border-left-color: var(--primary-blue);
+            color: var(--primary-blue);
+        }
+
+        /* Current Medications */
+        .current-medications {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .medications-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .medications-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .medication-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .medication-item:last-child {
+            border-bottom: none;
+        }
+
+        .medication-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .medication-name {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 1rem;
+        }
+
+        .medication-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-active {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-green);
+        }
+
+        .status-discontinued {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error-red);
+        }
+
+        .status-hold {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-orange);
+        }
+
+        .medication-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .medication-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--error-red);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        /* Recent Prescriptions */
+        .recent-prescriptions {
+            margin-top: 2rem;
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .prescriptions-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prescription-item {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .prescription-item:hover {
+            background: rgba(25, 118, 210, 0.02);
+        }
+
+        .prescription-item:last-child {
+            border-bottom: none;
+        }
+
+        .prescription-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .prescription-details {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .prescription-medications {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: 260px;
+            background: var(--card-white);
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .prescription-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid, .dosage-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+            <img class="logo-placeholder" src="sunrise.png" />
+            <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Dr. Archana Prasanth</span>
+            <div class="user-avatar">AP</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="patient-management.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Patient Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="appointments.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="medical-records.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"/>
+                    </svg>
+                    Medical Records
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="prescriptions.html" class="nav-link active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"/>
+                    </svg>
+                    Prescriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="lab-radiology.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"/>
+                    </svg>
+                    Lab & Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="billing.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"/>
+                    </svg>
+                    Billing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                    </svg>
+                    Reports & Analytics
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Prescription Management</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Drug Formulary
+                </button>
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    New Prescription
+                </button>
+            </div>
+        </div>
+
+        <!-- Prescription Layout -->
+        <div class="prescription-layout">
+            <!-- New Prescription Form -->
+            <div class="prescription-form">
+                <div class="form-header">
+                    <div>
+                        <div class="form-title">New Prescription</div>
+                        <div class="patient-info">Patient: Kuttiyamma • MRN: HOS-9528 • DOB: 01/Jan/1955</div>
+                    </div>
+                </div>
+
+                <div class="form-content">
+                    <div class="alert alert-danger">
+                        <strong>⚠️ Allergy Alert:</strong> Patient has severe Penicillin allergy (Anaphylaxis). Check drug interactions before prescribing.
+                    </div>
+
+                    <div class="form-step">
+                        <div class="step-title">
+                            <span class="step-number">1</span>
+                            Drug Selection
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label">Search Medication</label>
+                            <div class="drug-search">
+                                <input type="text" class="form-input" placeholder="Type medication name (Generic or Brand)..." id="drugSearch" autocomplete="off">
+                                <div class="search-results" id="searchResults">
+                                    <div class="search-result-item" onclick="selectDrug('Atorvastatin', '20mg Tablet')">
+                                        <div class="drug-name">Atorvastatin</div>
+                                        <div class="drug-details">Generic • 20mg, 40mg, 80mg tablets available</div>
+                                    </div>
+                                    <div class="search-result-item" onclick="selectDrug('Metoprolol', '50mg Tablet')">
+                                        <div class="drug-name">Metoprolol Tartrate</div>
+                                        <div class="drug-details">Generic • 25mg, 50mg, 100mg tablets available</div>
+                                    </div>
+                                    <div class="search-result-item" onclick="selectDrug('Aspirin', '75mg Tablet')">
+                                        <div class="drug-name">Aspirin (Low Dose)</div>
+                                        <div class="drug-details">Generic • 75mg, 81mg tablets available</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Selected Medication</label>
+                                <input type="text" class="form-input" id="selectedDrug" readonly placeholder="Select from search above">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Strength</label>
+                                <select class="form-select" id="drugStrength">
+                                    <option value="">Select strength</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-step">
+                        <div class="step-title">
+                            <span class="step-number">2</span>
+                            Dosage & Instructions
+                        </div>
+
+                        <div class="dosage-grid">
+                            <div class="form-group">
+                                <label class="form-label">Dosage</label>
+                                <input type="text" class="form-input" placeholder="e.g., 1 tablet">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Frequency</label>
+                                <select class="form-select">
+                                    <option value="">Select frequency</option>
+                                    <option value="once-daily">Once daily</option>
+                                    <option value="twice-daily">Twice daily</option>
+                                    <option value="three-times">Three times daily</option>
+                                    <option value="four-times">Four times daily</option>
+                                    <option value="as-needed">As needed</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Route</label>
+                                <select class="form-select">
+                                    <option value="oral">Oral</option>
+                                    <option value="iv">Intravenous</option>
+                                    <option value="im">Intramuscular</option>
+                                    <option value="topical">Topical</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label class="form-label">Duration</label>
+                                <input type="text" class="form-input" placeholder="e.g., 30 days">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Quantity</label>
+                                <input type="text" class="form-input" placeholder="e.g., 30 tablets">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Additional Instructions</label>
+                            <textarea class="form-textarea" placeholder="Special instructions for patient (e.g., Take with food, Avoid alcohol)"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-step">
+                        <div class="step-title">
+                            <span class="step-number">3</span>
+                            Safety Checks
+                        </div>
+
+                        <div class="alert alert-info">
+                            <strong>✓ Drug Interaction Check:</strong> No significant interactions found with current medications.
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <strong>⚠️ Monitoring Required:</strong> Monitor liver function tests if prescribing statin therapy.
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label">Clinical Indication</label>
+                            <textarea class="form-textarea" placeholder="Reason for prescribing this medication"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="form-step">
+                        <div style="display: flex; gap: 1rem; justify-content: flex-end;">
+                            <button class="btn btn-secondary">Save as Draft</button>
+                            <button class="btn btn-success">Send to Pharmacy</button>
+                            <button class="btn btn-primary">Issue Prescription</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Current Medications & Recent Prescriptions -->
+            <div>
+                <!-- Current Medications -->
+                <div class="current-medications">
+                    <div class="medications-header">
+                        <h3 class="medications-title">Current Medications</h3>
+                        <button class="btn btn-sm btn-outline">Medication Reconciliation</button>
+                    </div>
+
+                    <div class="medication-item">
+                        <div class="medication-header">
+                            <div class="medication-name">Aspirin</div>
+                            <span class="medication-status status-active">Active</span>
+                        </div>
+                        <div class="medication-details">
+                            75mg daily • Oral • Started: 22/Jun/2025<br>
+                            Indication: Post-MI prophylaxis
+                        </div>
+                        <div class="medication-actions">
+                            <button class="btn btn-sm btn-secondary">Modify</button>
+                            <button class="btn btn-sm btn-warning">Hold</button>
+                            <button class="btn btn-sm btn-danger">Discontinue</button>
+                        </div>
+                    </div>
+
+                    <div class="medication-item">
+                        <div class="medication-header">
+                            <div class="medication-name">Clopidogrel</div>
+                            <span class="medication-status status-active">Active</span>
+                        </div>
+                        <div class="medication-details">
+                            75mg daily • Oral • Started: 22/Jun/2025<br>
+                            Indication: Dual antiplatelet therapy post-stent
+                        </div>
+                        <div class="medication-actions">
+                            <button class="btn btn-sm btn-secondary">Modify</button>
+                            <button class="btn btn-sm btn-warning">Hold</button>
+                            <button class="btn btn-sm btn-danger">Discontinue</button>
+                        </div>
+                    </div>
+
+                    <div class="medication-item">
+                        <div class="medication-header">
+                            <div class="medication-name">Atorvastatin</div>
+                            <span class="medication-status status-active">Active</span>
+                        </div>
+                        <div class="medication-details">
+                            40mg daily • Oral • Started: 23/Jun/2025<br>
+                            Indication: Hyperlipidemia management
+                        </div>
+                        <div class="medication-actions">
+                            <button class="btn btn-sm btn-secondary">Modify</button>
+                            <button class="btn btn-sm btn-warning">Hold</button>
+                            <button class="btn btn-sm btn-danger">Discontinue</button>
+                        </div>
+                    </div>
+
+                    <div class="medication-item">
+                        <div class="medication-header">
+                            <div class="medication-name">Metoprolol</div>
+                            <span class="medication-status status-hold">On Hold</span>
+                        </div>
+                        <div class="medication-details">
+                            50mg twice daily • Oral • Started: 23/Jun/2025<br>
+                            Hold reason: Bradycardia (HR 52 bpm)
+                        </div>
+                        <div class="medication-actions">
+                            <button class="btn btn-sm btn-success">Resume</button>
+                            <button class="btn btn-sm btn-secondary">Modify</button>
+                            <button class="btn btn-sm btn-danger">Discontinue</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Prescriptions -->
+                <div class="recent-prescriptions">
+                    <div class="prescriptions-header">
+                        <h3 class="medications-title">Recent Prescriptions</h3>
+                        <button class="btn btn-sm btn-outline">View All</button>
+                    </div>
+
+                    <div class="prescription-item">
+                        <div class="prescription-date">25/Jun/2025 - 10:30 AM</div>
+                        <div class="prescription-details">Post-MI Medication Regimen</div>
+                        <div class="prescription-medications">
+                            Aspirin 75mg daily, Clopidogrel 75mg daily, Atorvastatin 40mg daily
+                        </div>
+                    </div>
+
+                    <div class="prescription-item">
+                        <div class="prescription-date">23/Jun/2025 - 3:15 PM</div>
+                        <div class="prescription-details">Cardiac Medications Initiation</div>
+                        <div class="prescription-medications">
+                            Metoprolol 50mg twice daily, Lisinopril 5mg daily
+                        </div>
+                    </div>
+
+                    <div class="prescription-item">
+                        <div class="prescription-date">22/Jun/2025 - 11:45 PM</div>
+                        <div class="prescription-details">Emergency Department Medications</div>
+                        <div class="prescription-medications">
+                            Morphine 2mg IV PRN, Heparin per protocol
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Sunrise Hospital - Erattupetta. EMR System designed and developed by <strong>Qatalyst LLP</strong></p>
+    </footer>
+
+    <script>
+        // Drug search functionality
+        const drugSearchInput = document.getElementById('drugSearch');
+        const searchResults = document.getElementById('searchResults');
+
+        drugSearchInput.addEventListener('input', function() {
+            if (this.value.length > 2) {
+                searchResults.style.display = 'block';
+            } else {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        drugSearchInput.addEventListener('focus', function() {
+            if (this.value.length > 2) {
+                searchResults.style.display = 'block';
+            }
+        });
+
+        document.addEventListener('click', function(e) {
+            if (!drugSearchInput.contains(e.target) && !searchResults.contains(e.target)) {
+                searchResults.style.display = 'none';
+            }
+        });
+
+        function selectDrug(drugName, strength) {
+            const selectedDrugInput = document.getElementById('selectedDrug');
+            const strengthSelect = document.getElementById('drugStrength');
+            
+            selectedDrugInput.value = drugName;
+            searchResults.style.display = 'none';
+            drugSearchInput.value = drugName;
+            
+            // Populate strength options based on selected drug
+            strengthSelect.innerHTML = '';
+            if (drugName === 'Atorvastatin') {
+                strengthSelect.innerHTML = `
+                    <option value="20mg">20mg</option>
+                    <option value="40mg">40mg</option>
+                    <option value="80mg">80mg</option>
+                `;
+            } else if (drugName === 'Metoprolol Tartrate') {
+                strengthSelect.innerHTML = `
+                    <option value="25mg">25mg</option>
+                    <option value="50mg">50mg</option>
+                    <option value="100mg">100mg</option>
+                `;
+            } else if (drugName === 'Aspirin (Low Dose)') {
+                strengthSelect.innerHTML = `
+                    <option value="75mg">75mg</option>
+                    <option value="81mg">81mg</option>
+                `;
+            }
+        }
+
+        // Medication action buttons
+        document.querySelectorAll('.medication-actions .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                const medicationName = this.closest('.medication-item').querySelector('.medication-name').textContent;
+                
+                // Simulate action feedback
+                this.style.transform = 'scale(0.95)';
+                this.textContent = 'Processing...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.style.transform = '';
+                    this.disabled = false;
+                    
+                    switch(action) {
+                        case 'Hold':
+                            this.textContent = '✓ On Hold';
+                            this.classList.remove('btn-warning');
+                            this.classList.add('btn-secondary');
+                            const statusBadge = this.closest('.medication-item').querySelector('.medication-status');
+                            statusBadge.textContent = 'On Hold';
+                            statusBadge.classList.remove('status-active');
+                            statusBadge.classList.add('status-hold');
+                            break;
+                        case 'Resume':
+                            this.textContent = '✓ Resumed';
+                            this.classList.remove('btn-success');
+                            this.classList.add('btn-secondary');
+                            const resumeStatusBadge = this.closest('.medication-item').querySelector('.medication-status');
+                            resumeStatusBadge.textContent = 'Active';
+                            resumeStatusBadge.classList.remove('status-hold');
+                            resumeStatusBadge.classList.add('status-active');
+                            break;
+                        case 'Discontinue':
+                            this.textContent = '✓ Discontinued';
+                            this.classList.remove('btn-danger');
+                            this.classList.add('btn-secondary');
+                            const discStatusBadge = this.closest('.medication-item').querySelector('.medication-status');
+                            discStatusBadge.textContent = 'Discontinued';
+                            discStatusBadge.classList.remove('status-active');
+                            discStatusBadge.classList.add('status-discontinued');
+                            break;
+                        default:
+                            this.textContent = action;
+                    }
+                }, 1500);
+                
+                console.log(`${action} medication: ${medicationName}`);
+            });
+        });
+
+        // Form input focus effects
+        document.querySelectorAll('.form-input, .form-textarea, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--primary-blue)';
+                this.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = 'var(--border-light)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Prescription form buttons
+        document.querySelectorAll('.form-step .btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const action = this.textContent.trim();
+                
+                this.style.transform = 'scale(0.98)';
+                this.textContent = 'Processing...';
+                this.disabled = true;
+                
+                setTimeout(() => {
+                    this.style.transform = '';
+                    this.disabled = false;
+                    
+                    switch(action) {
+                        case 'Send to Pharmacy':
+                            this.textContent = '✓ Sent to Pharmacy';
+                            this.classList.remove('btn-success');
+                            this.classList.add('btn-secondary');
+                            break;
+                        case 'Issue Prescription':
+                            this.textContent = '✓ Prescription Issued';
+                            this.classList.remove('btn-primary');
+                            this.classList.add('btn-secondary');
+                            break;
+                        case 'Save as Draft':
+                            this.textContent = '✓ Saved as Draft';
+                            break;
+                        default:
+                            this.textContent = action;
+                    }
+                }, 2000);
+            });
+        });
+    </script>
+</body>
+</html>
