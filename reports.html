@@ -1,0 +1,1040 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports & Analytics - Sunrise Hospital EMR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Medical-grade Color Palette */
+        :root {
+            --primary-blue: #1976d2;
+            --light-blue: #64b5f6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --error-red: #f44336;
+            --background: #f8f9fa;
+            --card-white: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --border-primary: #1976d2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 64px;
+        }
+
+          .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+        .hospital-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 260px;
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-right-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            padding: 2rem;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Filter Panel */
+        .filter-panel {
+            background: var(--card-white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .filter-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            margin-bottom: 0;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        /* Dashboard Grid */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Chart Cards */
+        .chart-card {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .chart-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .chart-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .chart-body {
+            padding: 1.5rem;
+            height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chart-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(25, 118, 210, 0.1), rgba(100, 181, 246, 0.05));
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-blue);
+            font-weight: 600;
+            border: 2px dashed rgba(25, 118, 210, 0.2);
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        /* KPI Grid */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .kpi-card {
+            background: var(--card-white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            text-align: center;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .kpi-card.success { border-left-color: var(--success-green); }
+        .kpi-card.warning { border-left-color: var(--warning-orange); }
+        .kpi-card.error { border-left-color: var(--error-red); }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .kpi-label {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .kpi-change {
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-top: 0.5rem;
+        }
+
+        .kpi-change.positive { color: var(--success-green); }
+        .kpi-change.negative { color: var(--error-red); }
+
+        /* Data Table */
+        .data-table-section {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+            margin-bottom: 2rem;
+        }
+
+        .table-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .table-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table th,
+        .data-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+            font-size: 0.9rem;
+        }
+
+        .data-table th {
+            background: var(--background);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .data-table tr:hover {
+            background: rgba(25, 118, 210, 0.02);
+        }
+
+        /* Report Categories */
+        .report-categories {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-category {
+            background: var(--card-white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid var(--border-light);
+        }
+
+        .report-category:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--primary-blue);
+        }
+
+        .category-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--primary-blue);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .category-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .category-description {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .category-count {
+            font-size: 0.8rem;
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: 260px;
+            background: var(--card-white);
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .filter-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+<img class="logo-placeholder" src="sunrise.png" />
+          <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Dr. Archana Prasanth</span>
+            <div class="user-avatar">AP</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="patient-management.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Patient Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="appointments.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="medical-records.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"/>
+                    </svg>
+                    Medical Records
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="prescriptions.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"/>
+                    </svg>
+                    Prescriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="lab-radiology.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"/>
+                    </svg>
+                    Lab & Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="billing.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"/>
+                    </svg>
+                    Billing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                    </svg>
+                    Reports & Analytics
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Reports & Analytics</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Scheduled Reports
+                </button>
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    Custom Report
+                </button>
+            </div>
+        </div>
+
+        <!-- Filter Panel -->
+        <div class="filter-panel">
+            <div class="filter-grid">
+                <div class="form-group">
+                    <label class="form-label">Date Range</label>
+                    <select class="form-select">
+                        <option>Last 7 Days</option>
+                        <option>Last 30 Days</option>
+                        <option>Last 3 Months</option>
+                        <option>Last 6 Months</option>
+                        <option>Last Year</option>
+                        <option>Custom Range</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <select class="form-select">
+                        <option>All Departments</option>
+                        <option>Cardiology</option>
+                        <option>Orthopedics</option>
+                        <option>General Medicine</option>
+                        <option>Emergency</option>
+                        <option>Pediatrics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Report Type</label>
+                    <select class="form-select">
+                        <option>All Reports</option>
+                        <option>Financial</option>
+                        <option>Clinical</option>
+                        <option>Operational</option>
+                        <option>Quality Metrics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" style="width: 100%;">Apply Filters</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- KPI Grid -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-value">247</div>
+                <div class="kpi-label">Total Patients</div>
+                <div class="kpi-change positive">↗ +12% vs last month</div>
+            </div>
+
+            <div class="kpi-card success">
+                <div class="kpi-value">₹18.6M</div>
+                <div class="kpi-label">Monthly Revenue</div>
+                <div class="kpi-change positive">↗ +8.5% vs last month</div>
+            </div>
+
+            <div class="kpi-card warning">
+                <div class="kpi-value">89%</div>
+                <div class="kpi-label">Bed Occupancy</div>
+                <div class="kpi-change positive">↗ +3% vs last month</div>
+            </div>
+
+            <div class="kpi-card">
+                <div class="kpi-value">4.2</div>
+                <div class="kpi-label">Avg Length of Stay</div>
+                <div class="kpi-change negative">↘ -0.3 days vs last month</div>
+            </div>
+
+            <div class="kpi-card success">
+                <div class="kpi-value">94%</div>
+                <div class="kpi-label">Patient Satisfaction</div>
+                <div class="kpi-change positive">↗ +2% vs last month</div>
+            </div>
+
+            <div class="kpi-card error">
+                <div class="kpi-value">2.1%</div>
+                <div class="kpi-label">Readmission Rate</div>
+                <div class="kpi-change positive">↘ -0.4% vs last month</div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Patient Volume Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Patient Volume Trends</div>
+                    <div class="chart-value">+15.2%</div>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-placeholder">
+                        📈 Patient Admission Trends
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            Line chart showing daily patient admissions<br>
+                            Peak: 45 patients on 23/Jun<br>
+                            Average: 34 patients/day
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revenue Chart -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Revenue Analysis</div>
+                    <div class="chart-value">₹2.45M</div>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-placeholder">
+                        💰 Monthly Revenue Breakdown
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            Bar chart by department<br>
+                            Cardiology: ₹8.5M (46%)<br>
+                            Orthopedics: ₹4.2M (23%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Performance -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Department Performance</div>
+                    <div class="chart-value">8 Depts</div>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-placeholder">
+                        🏥 Department Metrics
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            Heatmap of department efficiency<br>
+                            Top: Cardiology (98% efficiency)<br>
+                            Focus area: Emergency (85%)
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quality Metrics -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <div class="chart-title">Quality Indicators</div>
+                    <div class="chart-value">94.2%</div>
+                </div>
+                <div class="chart-body">
+                    <div class="chart-placeholder">
+                        ⭐ Quality Score Dashboard
+                        <div style="font-size: 0.9rem; color: var(--text-secondary);">
+                            Composite quality metrics<br>
+                            Patient Safety: 96%<br>
+                            Care Effectiveness: 92%
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Report Categories -->
+        <div class="report-categories">
+            <div class="report-category" onclick="selectCategory('clinical')">
+                <div class="category-icon">🩺</div>
+                <div class="category-title">Clinical Reports</div>
+                <div class="category-description">Patient outcomes, treatment effectiveness, and clinical quality metrics</div>
+                <div class="category-count">15 reports available</div>
+            </div>
+
+            <div class="report-category" onclick="selectCategory('financial')">
+                <div class="category-icon" style="background: var(--success-green);">💰</div>
+                <div class="category-title">Financial Reports</div>
+                <div class="category-description">Revenue analysis, billing reports, and financial performance metrics</div>
+                <div class="category-count">12 reports available</div>
+            </div>
+
+            <div class="report-category" onclick="selectCategory('operational')">
+                <div class="category-icon" style="background: var(--warning-orange);">⚙️</div>
+                <div class="category-title">Operational Reports</div>
+                <div class="category-description">Staff productivity, resource utilization, and operational efficiency</div>
+                <div class="category-count">18 reports available</div>
+            </div>
+
+            <div class="report-category" onclick="selectCategory('regulatory')">
+                <div class="category-icon" style="background: var(--error-red);">📋</div>
+                <div class="category-title">Regulatory & Compliance</div>
+                <div class="category-description">Compliance reports, regulatory submissions, and audit trails</div>
+                <div class="category-count">8 reports available</div>
+            </div>
+
+            <div class="report-category" onclick="selectCategory('patient')">
+                <div class="category-icon" style="background: var(--light-blue);">👥</div>
+                <div class="category-title">Patient Analytics</div>
+                <div class="category-description">Patient demographics, satisfaction surveys, and population health</div>
+                <div class="category-count">10 reports available</div>
+            </div>
+
+            <div class="report-category" onclick="selectCategory('research')">
+                <div class="category-icon" style="background: #9c27b0;">🔬</div>
+                <div class="category-title">Research & Analytics</div>
+                <div class="category-description">Clinical research data, statistical analysis, and trend reports</div>
+                <div class="category-count">6 reports available</div>
+            </div>
+        </div>
+
+        <!-- Data Table Section -->
+        <div class="data-table-section">
+            <div class="table-header">
+                <h3 class="table-title">Recent Report Activity</h3>
+                <div style="display: flex; gap: 1rem;">
+                    <select class="form-select" style="width: auto;">
+                        <option>All Reports</option>
+                        <option>Generated Today</option>
+                        <option>Scheduled Reports</option>
+                        <option>Failed Reports</option>
+                    </select>
+                    <button class="btn btn-outline">Export All</button>
+                </div>
+            </div>
+
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Report Name</th>
+                        <th>Category</th>
+                        <th>Generated</th>
+                        <th>Generated By</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Monthly Cardiology Performance</strong></td>
+                        <td>Clinical</td>
+                        <td>25/Jun/2025 09:15</td>
+                        <td>Dr. Archana Prasanth</td>
+                        <td><span style="color: var(--success-green); font-weight: 600;">✓ Completed</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">View</button>
+                            <button class="btn btn-sm btn-secondary">Download</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Revenue Summary - June 2025</strong></td>
+                        <td>Financial</td>
+                        <td>24/Jun/2025 18:30</td>
+                        <td>Finance Team</td>
+                        <td><span style="color: var(--success-green); font-weight: 600;">✓ Completed</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">View</button>
+                            <button class="btn btn-sm btn-secondary">Download</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Patient Satisfaction Survey</strong></td>
+                        <td>Patient Analytics</td>
+                        <td>24/Jun/2025 14:20</td>
+                        <td>Quality Team</td>
+                        <td><span style="color: var(--warning-orange); font-weight: 600;">⏳ Processing</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-secondary">Track Progress</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Bed Occupancy Analysis</strong></td>
+                        <td>Operational</td>
+                        <td>23/Jun/2025 22:45</td>
+                        <td>Operations Manager</td>
+                        <td><span style="color: var(--success-green); font-weight: 600;">✓ Completed</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">View</button>
+                            <button class="btn btn-sm btn-secondary">Download</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Medication Safety Report</strong></td>
+                        <td>Regulatory</td>
+                        <td>23/Jun/2025 16:10</td>
+                        <td>Pharmacy Director</td>
+                        <td><span style="color: var(--success-green); font-weight: 600;">✓ Completed</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">View</button>
+                            <button class="btn btn-sm btn-secondary">Download</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Emergency Department Metrics</strong></td>
+                        <td>Clinical</td>
+                        <td>23/Jun/2025 11:30</td>
+                        <td>Emergency Director</td>
+                        <td><span style="color: var(--error-red); font-weight: 600;">✗ Failed</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-warning">Retry</button>
+                            <button class="btn btn-sm btn-secondary">View Error</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Sunrise Hospital - Erattupetta. EMR System designed and developed by <strong>Qatalyst LLP</strong></p>
+    </footer>
+
+    <script>
+        function selectCategory(category) {
+            console.log(`Selected category: ${category}`);
+            
+            // Visual feedback
+            event.currentTarget.style.transform = 'scale(0.98)';
+            setTimeout(() => {
+                event.currentTarget.style.transform = '';
+            }, 150);
+            
+            // In a real application, this would filter reports or navigate to category view
+            const categoryTitles = {
+                'clinical': 'Clinical Reports',
+                'financial': 'Financial Reports', 
+                'operational': 'Operational Reports',
+                'regulatory': 'Regulatory & Compliance',
+                'patient': 'Patient Analytics',
+                'research': 'Research & Analytics'
+            };
+            
+            // Simulate category selection
+            alert(`Loading ${categoryTitles[category]}...`);
+        }
+
+        // Form input focus effects
+        document.querySelectorAll('.form-input, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--primary-blue)';
+                this.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = 'var(--border-light)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Button interactions
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                if (this.textContent.includes('Apply Filters')) {
+                    this.style.transform = 'scale(0.95)';
+                    this.textContent = 'Applying...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.disabled = false;
+                        this.textContent = 'Apply Filters';
+                        console.log('Filters applied');
+                    }, 1500);
+                } else if (this.textContent.includes('View') || this.textContent.includes('Download')) {
+                    const action = this.textContent.trim();
+                    const reportName = this.closest('tr').querySelector('td strong').textContent;
+                    
+                    this.style.transform = 'scale(0.95)';
+                    this.textContent = 'Loading...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.disabled = false;
+                        this.textContent = action;
+                        console.log(`${action}: ${reportName}`);
+                    }, 1000);
+                }
+            });
+        });
+
+        // Chart placeholder interactions
+        document.querySelectorAll('.chart-placeholder').forEach(chart => {
+            chart.addEventListener('click', function() {
+                const chartTitle = this.closest('.chart-card').querySelector('.chart-title').textContent;
+                console.log(`Viewing detailed chart: ${chartTitle}`);
+                
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 200);
+            });
+        });
+
+        // Simulate real-time data updates
+        setInterval(() => {
+            if (Math.random() > 0.9) {
+                // Update a random KPI value
+                const kpiValues = document.querySelectorAll('.kpi-value');
+                if (kpiValues.length > 0) {
+                    const randomKpi = kpiValues[Math.floor(Math.random() * kpiValues.length)];
+                    const currentValue = randomKpi.textContent;
+                    
+                    if (currentValue.includes('₹')) {
+                        // Update revenue values
+                        const numValue = parseFloat(currentValue.replace(/[₹M,]/g, ''));
+                        const change = (Math.random() - 0.5) * 0.1; // ±5% change
+                        const newValue = (numValue * (1 + change)).toFixed(1);
+                        randomKpi.textContent = `₹${newValue}M`;
+                    } else if (currentValue.includes('%')) {
+                        // Update percentage values
+                        const numValue = parseFloat(currentValue.replace('%', ''));
+                        const change = (Math.random() - 0.5) * 2; // ±1% change
+                        const newValue = Math.max(0, Math.min(100, numValue + change)).toFixed(1);
+                        randomKpi.textContent = `${newValue}%`;
+                    }
+                }
+            }
+        }, 10000);
+
+        // Auto-refresh indicator
+        let refreshCounter = 30;
+        const refreshInterval = setInterval(() => {
+            refreshCounter--;
+            if (refreshCounter <= 0) {
+                refreshCounter = 30;
+                console.log('Auto-refreshing dashboard data...');
+                
+                // Show brief loading indicator
+                const pageTitle = document.querySelector('.page-title');
+                const originalTitle = pageTitle.textContent;
+                pageTitle.textContent = 'Reports & Analytics (Refreshing...)';
+                
+                setTimeout(() => {
+                    pageTitle.textContent = originalTitle;
+                }, 2000);
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
