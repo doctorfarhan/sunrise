@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Appointments - Sunrise Hospital EMR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Medical-grade Color Palette */
+        :root {
+            --primary-blue: #1976d2;
+            --light-blue: #64b5f6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --error-red: #f44336;
+            --background: #f8f9fa;
+            --card-white: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --border-primary: #1976d2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 64px;
+        }
+
+      .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+
+        .hospital-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 260px;
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-right-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            padding: 2rem;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Calendar Grid */
+        .calendar-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Mini Calendar */
+        .mini-calendar {
+            background: var(--card-white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            height: fit-content;
+            position: sticky;
+            top: 2rem;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .calendar-nav {
+            background: none;
+            border: none;
+            color: var(--primary-blue);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+
+        .calendar-nav:hover {
+            background: rgba(25, 118, 210, 0.1);
+        }
+
+        .calendar-month {
+            font-weight: 600;
+            color: var(--text-primary);
+            flex: 1;
+            text-align: center;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 1px;
+            background: var(--border-light);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .calendar-day {
+            background: var(--card-white);
+            padding: 0.75rem 0.5rem;
+            text-align: center;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .calendar-day.header {
+            background: var(--background);
+            font-weight: 600;
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .calendar-day.today {
+            background: var(--primary-blue);
+            color: white;
+            font-weight: 600;
+        }
+
+        .calendar-day.has-appointments {
+            background: rgba(25, 118, 210, 0.1);
+            color: var(--primary-blue);
+            font-weight: 600;
+        }
+
+        .calendar-day:hover:not(.header) {
+            background: rgba(25, 118, 210, 0.05);
+        }
+
+        /* Appointment Stats */
+        .appointment-stats {
+            margin-top: 2rem;
+            padding: 1rem;
+            background: var(--background);
+            border-radius: 6px;
+        }
+
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Main Calendar View */
+        .main-calendar {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .view-tabs {
+            display: flex;
+            background: var(--background);
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .tab-btn {
+            padding: 1rem 2rem;
+            border: none;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 500;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+            background: var(--card-white);
+        }
+
+        .tab-btn:hover {
+            color: var(--primary-blue);
+        }
+
+        /* Day View */
+        .day-view {
+            padding: 1.5rem;
+        }
+
+        .day-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .current-date {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .date-nav {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .time-slots {
+            display: grid;
+            gap: 1rem;
+        }
+
+        .time-slot {
+            display: grid;
+            grid-template-columns: 100px 1fr;
+            gap: 1rem;
+            padding: 1rem 0;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .time-label {
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-align: right;
+            padding-right: 1rem;
+        }
+
+        .appointments {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .appointment {
+            padding: 1rem;
+            border-radius: 6px;
+            border-left: 4px solid var(--primary-blue);
+            background: rgba(25, 118, 210, 0.05);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .appointment:hover {
+            transform: translateX(4px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .appointment.confirmed {
+            border-left-color: var(--success-green);
+            background: rgba(76, 175, 80, 0.05);
+        }
+
+        .appointment.pending {
+            border-left-color: var(--warning-orange);
+            background: rgba(255, 152, 0, 0.05);
+        }
+
+        .appointment.cancelled {
+            border-left-color: var(--error-red);
+            background: rgba(244, 67, 54, 0.05);
+            opacity: 0.7;
+        }
+
+        .appointment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .appointment-time {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .appointment-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .appointment-actions {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-warning {
+            background: var(--warning-orange);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .status-confirmed {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-green);
+        }
+
+        .status-pending {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-orange);
+        }
+
+        .status-cancelled {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error-red);
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: 260px;
+            background: var(--card-white);
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .calendar-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .time-slot {
+                grid-template-columns: 80px 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+             <img class="logo-placeholder" src="sunrise.png" />
+            <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Dr. Archana Prasanth</span>
+            <div class="user-avatar">AP</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="patient-management.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Patient Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="appointments.html" class="nav-link active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="medical-records.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"/>
+                    </svg>
+                    Medical Records
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="prescriptions.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"/>
+                    </svg>
+                    Prescriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="lab-radiology.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"/>
+                    </svg>
+                    Lab & Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="billing.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"/>
+                    </svg>
+                    Billing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                    </svg>
+                    Reports & Analytics
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Appointment Management</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+                    </svg>
+                    Appointment Templates
+                </button>
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    New Appointment
+                </button>
+            </div>
+        </div>
+
+        <!-- Calendar Layout -->
+        <div class="calendar-layout">
+            <!-- Mini Calendar -->
+            <div class="mini-calendar">
+                <div class="calendar-header">
+                    <button class="calendar-nav">←</button>
+                    <div class="calendar-month">June 2025</div>
+                    <button class="calendar-nav">→</button>
+                </div>
+                
+                <div class="calendar-grid">
+                    <div class="calendar-day header">S</div>
+                    <div class="calendar-day header">M</div>
+                    <div class="calendar-day header">T</div>
+                    <div class="calendar-day header">W</div>
+                    <div class="calendar-day header">T</div>
+                    <div class="calendar-day header">F</div>
+                    <div class="calendar-day header">S</div>
+                    
+                    <div class="calendar-day">1</div>
+                    <div class="calendar-day has-appointments">2</div>
+                    <div class="calendar-day has-appointments">3</div>
+                    <div class="calendar-day">4</div>
+                    <div class="calendar-day has-appointments">5</div>
+                    <div class="calendar-day">6</div>
+                    <div class="calendar-day">7</div>
+                    
+                    <div class="calendar-day">8</div>
+                    <div class="calendar-day has-appointments">9</div>
+                    <div class="calendar-day has-appointments">10</div>
+                    <div class="calendar-day">11</div>
+                    <div class="calendar-day has-appointments">12</div>
+                    <div class="calendar-day">13</div>
+                    <div class="calendar-day">14</div>
+                    
+                    <div class="calendar-day">15</div>
+                    <div class="calendar-day has-appointments">16</div>
+                    <div class="calendar-day">17</div>
+                    <div class="calendar-day">18</div>
+                    <div class="calendar-day has-appointments">19</div>
+                    <div class="calendar-day">20</div>
+                    <div class="calendar-day">21</div>
+                    
+                    <div class="calendar-day">22</div>
+                    <div class="calendar-day has-appointments">23</div>
+                    <div class="calendar-day">24</div>
+                    <div class="calendar-day today">25</div>
+                    <div class="calendar-day has-appointments">26</div>
+                    <div class="calendar-day">27</div>
+                    <div class="calendar-day">28</div>
+                    
+                    <div class="calendar-day">29</div>
+                    <div class="calendar-day has-appointments">30</div>
+                </div>
+
+                <div class="appointment-stats">
+                    <h3 style="font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Today's Stats</h3>
+                    <div class="stat-row">
+                        <span class="stat-label">Total Appointments</span>
+                        <span class="stat-value">34</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Confirmed</span>
+                        <span class="stat-value" style="color: var(--success-green);">28</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Pending</span>
+                        <span class="stat-value" style="color: var(--warning-orange);">4</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">Cancelled</span>
+                        <span class="stat-value" style="color: var(--error-red);">2</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-label">No-shows</span>
+                        <span class="stat-value" style="color: var(--error-red);">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Calendar View -->
+            <div class="main-calendar">
+                <div class="view-tabs">
+                    <button class="tab-btn active">Day View</button>
+                    <button class="tab-btn">Week View</button>
+                    <button class="tab-btn">Month View</button>
+                </div>
+
+                <div class="day-view">
+                    <div class="day-header">
+                        <div class="current-date">Wednesday, June 25, 2025</div>
+                        <div class="date-nav">
+                            <button class="btn btn-secondary">← Previous Day</button>
+                            <button class="btn btn-secondary">Today</button>
+                            <button class="btn btn-secondary">Next Day →</button>
+                        </div>
+                    </div>
+
+                    <div class="time-slots">
+                        <div class="time-slot">
+                            <div class="time-label">8:00 AM</div>
+                            <div class="appointments">
+                                <div class="appointment confirmed">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Kuttiyamma</div>
+                                        <span class="status-badge status-confirmed">Confirmed</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology Follow-up • Post-MI Care<br>
+                                        MRN: HOS-9528 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-success btn-sm">Check In</button>
+                                        <button class="btn btn-secondary btn-sm">Reschedule</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">8:30 AM</div>
+                            <div class="appointments">
+                                <div class="appointment pending">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">A A Parikutty</div>
+                                        <span class="status-badge status-pending">Pending</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology Consultation • Hypertension Review<br>
+                                        MRN: HOS-8717 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-warning btn-sm">Confirm</button>
+                                        <button class="btn btn-secondary btn-sm">Contact Patient</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">9:00 AM</div>
+                            <div class="appointments">
+                                <div class="appointment confirmed">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Mary Thomas</div>
+                                        <span class="status-badge status-confirmed">Confirmed</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology • Heart Failure Management<br>
+                                        MRN: HOS-1789 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-success btn-sm">Check In</button>
+                                        <button class="btn btn-secondary btn-sm">View History</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">9:30 AM</div>
+                            <div class="appointments">
+                                <!-- Empty slot -->
+                                <div style="color: var(--text-secondary); font-style: italic; padding: 1rem; text-align: center; border: 2px dashed var(--border-light); border-radius: 6px;">
+                                    Available Slot - Click to Schedule
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">10:00 AM</div>
+                            <div class="appointments">
+                                <div class="appointment confirmed">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Rajesh Kumar</div>
+                                        <span class="status-badge status-confirmed">Confirmed</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology • Chest Pain Evaluation<br>
+                                        MRN: HOS-1287 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-success btn-sm">Check In</button>
+                                        <button class="btn btn-secondary btn-sm">Pre-visit Notes</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">10:30 AM</div>
+                            <div class="appointments">
+                                <div class="appointment cancelled">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Suresh Nair</div>
+                                        <span class="status-badge status-cancelled">Cancelled</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology • Palpitations • Cancelled by Patient<br>
+                                        MRN: HOS-3899
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-secondary btn-sm">Reschedule</button>
+                                        <button class="btn btn-secondary btn-sm">Contact</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">11:00 AM</div>
+                            <div class="appointments">
+                                <div class="appointment confirmed">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Priya Menon</div>
+                                        <span class="status-badge status-confirmed">Confirmed</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology • New Patient Consultation<br>
+                                        MRN: HOS-9845 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-success btn-sm">Check In</button>
+                                        <button class="btn btn-secondary btn-sm">New Patient Forms</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">11:30 AM</div>
+                            <div class="appointments">
+                                <!-- Empty slot -->
+                                <div style="color: var(--text-secondary); font-style: italic; padding: 1rem; text-align: center; border: 2px dashed var(--border-light); border-radius: 6px;">
+                                    Available Slot - Click to Schedule
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">12:00 PM</div>
+                            <div class="appointments">
+                                <div style="color: var(--text-secondary); font-style: italic; padding: 1rem; text-align: center; background: rgba(255, 152, 0, 0.1); border-radius: 6px;">
+                                    🍽️ Lunch Break
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">2:00 PM</div>
+                            <div class="appointments">
+                                <div class="appointment confirmed">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Mohanan P K</div>
+                                        <span class="status-badge status-confirmed">Confirmed</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology • Follow-up Visit<br>
+                                        MRN: HOS-9158 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-success btn-sm">Check In</button>
+                                        <button class="btn btn-secondary btn-sm">Lab Results</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="time-slot">
+                            <div class="time-label">2:30 PM</div>
+                            <div class="appointments">
+                                <div class="appointment pending">
+                                    <div class="appointment-header">
+                                        <div class="patient-name">Nalini Krishnan</div>
+                                        <span class="status-badge status-pending">Pending</span>
+                                    </div>
+                                    <div class="appointment-details">
+                                        Cardiology • Diabetes + Cardiac Risk Assessment<br>
+                                        MRN: HOS-9695 • Room: 204
+                                    </div>
+                                    <div class="appointment-actions">
+                                        <button class="btn btn-warning btn-sm">Confirm</button>
+                                        <button class="btn btn-secondary btn-sm">Send Reminder</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Sunrise Hospital - Erattupetta. EMR System designed and developed by <strong>Qatalyst LLP</strong></p>
+    </footer>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                document.querySelectorAll('.tab-btn').forEach(tab => tab.classList.remove('active'));
+                this.classList.add('active');
+                
+                // In a real app, this would switch views
+                console.log('Switched to:', this.textContent);
+            });
+        });
+
+        // Calendar day click
+        document.querySelectorAll('.calendar-day:not(.header)').forEach(day => {
+            day.addEventListener('click', function() {
+                if (!this.classList.contains('today')) {
+                    document.querySelectorAll('.calendar-day').forEach(d => d.classList.remove('today'));
+                    this.classList.add('today');
+                    
+                    // Update day view
+                    const dayNumber = this.textContent;
+                    document.querySelector('.current-date').textContent = `Wednesday, June ${dayNumber}, 2025`;
+                }
+            });
+        });
+
+        // Appointment actions
+        document.querySelectorAll('.appointment').forEach(appointment => {
+            const buttons = appointment.querySelectorAll('.btn');
+            buttons.forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    
+                    const action = this.textContent.trim();
+                    const patientName = appointment.querySelector('.patient-name').textContent;
+                    
+                    // Simulate action feedback
+                    this.style.transform = 'scale(0.95)';
+                    this.textContent = 'Processing...';
+                    this.disabled = true;
+                    
+                    setTimeout(() => {
+                        this.style.transform = '';
+                        this.disabled = false;
+                        
+                        switch(action) {
+                            case 'Check In':
+                                this.textContent = '✓ Checked In';
+                                this.classList.remove('btn-success');
+                                this.classList.add('btn-secondary');
+                                appointment.style.background = 'rgba(76, 175, 80, 0.1)';
+                                break;
+                            case 'Confirm':
+                                this.textContent = '✓ Confirmed';
+                                this.classList.remove('btn-warning');
+                                this.classList.add('btn-success');
+                                appointment.classList.remove('pending');
+                                appointment.classList.add('confirmed');
+                                const badge = appointment.querySelector('.status-badge');
+                                badge.textContent = 'Confirmed';
+                                badge.classList.remove('status-pending');
+                                badge.classList.add('status-confirmed');
+                                break;
+                            default:
+                                this.textContent = action;
+                        }
+                    }, 1000);
+                    
+                    console.log(`${action} for ${patientName}`);
+                });
+            });
+        });
+
+        // Available slot click
+        document.querySelectorAll('[style*="Available Slot"]').forEach(slot => {
+            slot.addEventListener('click', function() {
+                this.style.background = 'rgba(25, 118, 210, 0.1)';
+                this.innerHTML = '+ Scheduling New Appointment...';
+                
+                setTimeout(() => {
+                    this.innerHTML = 'Available Slot - Click to Schedule';
+                    this.style.background = '';
+                }, 2000);
+            });
+        });
+
+        // Real-time updates simulation
+        setInterval(() => {
+            // Update appointment stats occasionally
+            if (Math.random() > 0.95) {
+                const confirmedStat = document.querySelector('.stat-value[style*="success-green"]');
+                if (confirmedStat) {
+                    const current = parseInt(confirmedStat.textContent);
+                    confirmedStat.textContent = current + 1;
+                }
+            }
+        }, 5000);
+    </script>
+</body>
+</html>
