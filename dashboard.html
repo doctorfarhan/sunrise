@@ -1,0 +1,1320 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Sunrise Hospitals - EMR Dashboard</title>
+        <style>
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                    Roboto, "Helvetica Neue", Arial, sans-serif;
+                background: #f8f9fa;
+                color: #2c3e50;
+                line-height: 1.6;
+            }
+
+            /* Medical-grade Color Palette */
+            :root {
+                --primary-blue: #1976d2;
+                --light-blue: #64b5f6;
+                --success-green: #4caf50;
+                --warning-orange: #ff9800;
+                --error-red: #f44336;
+                --background: #f8f9fa;
+                --card-white: #ffffff;
+                --text-primary: #2c3e50;
+                --text-secondary: #64748b;
+                --border-light: #e2e8f0;
+                --border-primary: #1976d2;
+                --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+                --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.08);
+                --shadow-lg: 0 8px 25px rgba(0, 0, 0, 0.12);
+            }
+
+            /* Header */
+            .header {
+                background: var(--card-white);
+                border-bottom: 1px solid var(--border-light);
+                padding: 1rem 2rem;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                box-shadow: var(--shadow-md);
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                z-index: 1000;
+                height: 64px;
+            }
+
+            .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+            .hospital-name {
+                font-size: 1rem;
+                font-weight: 700;
+                color: #008080;
+            }
+
+            .user-info {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .user-avatar {
+                width: 36px;
+                height: 36px;
+                border-radius: 50%;
+                background: var(--success-green);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-weight: 600;
+                font-size: 0.9rem;
+            }
+
+            .user-name {
+                font-weight: 600;
+                color: var(--text-primary);
+            }
+
+            /* Sidebar */
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 64px;
+                height: calc(100vh - 64px);
+                width: 260px;
+                background: var(--card-white);
+                border-right: 1px solid var(--border-light);
+                padding: 1.5rem 0;
+                overflow-y: auto;
+                box-shadow: var(--shadow-sm);
+            }
+
+            .nav-menu {
+                list-style: none;
+            }
+
+            .nav-item {
+                margin: 0.25rem 0;
+            }
+
+            .nav-link {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem 1.5rem;
+                color: var(--text-secondary);
+                text-decoration: none;
+                transition: all 0.2s ease;
+                border-right: 3px solid transparent;
+            }
+
+            .nav-link:hover,
+            .nav-link.active {
+                background: rgba(25, 118, 210, 0.05);
+                color: var(--primary-blue);
+                border-right-color: var(--primary-blue);
+            }
+
+            .nav-icon {
+                width: 18px;
+                height: 18px;
+                fill: currentColor;
+            }
+
+            /* Main Content */
+            .main-content {
+                margin-left: 260px;
+                margin-top: 64px;
+                padding: 2rem;
+                min-height: calc(100vh - 64px);
+            }
+
+            /* Dashboard Header */
+            .dashboard-header {
+                margin-bottom: 2rem;
+            }
+
+            .dashboard-title {
+                font-size: 1.75rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 0.5rem;
+            }
+
+            .dashboard-subtitle {
+                color: var(--text-secondary);
+                font-size: 1rem;
+            }
+
+            /* Stats Grid */
+            .stats-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 1.5rem;
+                margin-bottom: 2rem;
+            }
+
+            .stat-card {
+                background: var(--card-white);
+                border-radius: 8px;
+                padding: 1.5rem;
+                box-shadow: var(--shadow-sm);
+                border-left: 4px solid var(--primary-blue);
+                position: relative;
+                overflow: hidden;
+            }
+
+            .stat-card.success {
+                border-left-color: var(--success-green);
+            }
+            .stat-card.warning {
+                border-left-color: var(--warning-orange);
+            }
+            .stat-card.error {
+                border-left-color: var(--error-red);
+            }
+
+            .stat-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 1rem;
+            }
+
+            .stat-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                font-size: 1.2rem;
+            }
+
+            .stat-icon.primary {
+                background: var(--primary-blue);
+            }
+            .stat-icon.success {
+                background: var(--success-green);
+            }
+            .stat-icon.warning {
+                background: var(--warning-orange);
+            }
+            .stat-icon.error {
+                background: var(--error-red);
+            }
+
+            .stat-number {
+                font-size: 2rem;
+                font-weight: 700;
+                color: var(--text-primary);
+                margin-bottom: 0.25rem;
+            }
+
+            .stat-label {
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                font-weight: 500;
+            }
+
+            .stat-change {
+                font-size: 0.8rem;
+                font-weight: 600;
+                display: flex;
+                align-items: center;
+                gap: 0.25rem;
+                margin-top: 0.5rem;
+            }
+
+            .stat-change.positive {
+                color: var(--success-green);
+            }
+            .stat-change.negative {
+                color: var(--error-red);
+            }
+
+            /* Dashboard Grid */
+            .dashboard-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr;
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            /* Department Tabs */
+            .department-section {
+                background: var(--card-white);
+                border-radius: 8px;
+                box-shadow: var(--shadow-sm);
+                overflow: hidden;
+            }
+
+            .department-header {
+                padding: 1.5rem;
+                border-bottom: 1px solid var(--border-light);
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .section-title {
+                font-size: 1.25rem;
+                font-weight: 600;
+                color: var(--text-primary);
+            }
+
+            .department-tabs {
+                display: flex;
+                background: var(--background);
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            .tab-btn {
+                padding: 0.75rem 1.5rem;
+                border: none;
+                background: transparent;
+                color: var(--text-secondary);
+                font-weight: 500;
+                cursor: pointer;
+                border-bottom: 2px solid transparent;
+                transition: all 0.2s ease;
+            }
+
+            .tab-btn.active {
+                color: var(--primary-blue);
+                border-bottom-color: var(--primary-blue);
+                background: var(--card-white);
+            }
+
+            .tab-btn:hover {
+                color: var(--primary-blue);
+            }
+
+            /* Patient Table */
+            .patient-table {
+                width: 100%;
+                border-collapse: collapse;
+            }
+
+            .patient-table th {
+                padding: 1rem;
+                text-align: left;
+                font-weight: 600;
+                color: var(--text-primary);
+                background: var(--background);
+                border-bottom: 1px solid var(--border-light);
+                font-size: 0.9rem;
+            }
+
+            .patient-table td {
+                padding: 1rem;
+                border-bottom: 1px solid var(--border-light);
+                font-size: 0.9rem;
+            }
+
+            .patient-table tr:hover {
+                background: rgba(25, 118, 210, 0.02);
+            }
+
+            .patient-id {
+                font-weight: 600;
+                color: var(--primary-blue);
+            }
+
+            .priority-badge {
+                padding: 0.25rem 0.5rem;
+                border-radius: 4px;
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-transform: uppercase;
+            }
+
+            .priority-high {
+                background: rgba(244, 67, 54, 0.1);
+                color: var(--error-red);
+            }
+
+            .priority-medium {
+                background: rgba(255, 152, 0, 0.1);
+                color: var(--warning-orange);
+            }
+
+            .priority-low {
+                background: rgba(76, 175, 80, 0.1);
+                color: var(--success-green);
+            }
+
+            .status-badge {
+                padding: 0.25rem 0.5rem;
+                border-radius: 12px;
+                font-size: 0.75rem;
+                font-weight: 600;
+            }
+
+            .status-active {
+                background: rgba(76, 175, 80, 0.1);
+                color: var(--success-green);
+            }
+
+            .status-waiting {
+                background: rgba(255, 152, 0, 0.1);
+                color: var(--warning-orange);
+            }
+
+            .status-discharged {
+                background: rgba(25, 118, 210, 0.1);
+                color: var(--primary-blue);
+            }
+
+            /* Quick Stats Sidebar */
+            .quick-stats {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+
+            .stat-widget {
+                background: var(--card-white);
+                border-radius: 8px;
+                padding: 1.5rem;
+                box-shadow: var(--shadow-sm);
+            }
+
+            .widget-title {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--text-primary);
+                margin-bottom: 1rem;
+            }
+
+            /* Chart placeholder */
+            .chart-placeholder {
+                width: 100%;
+                height: 150px;
+                background: linear-gradient(
+                    135deg,
+                    rgba(25, 118, 210, 0.1),
+                    rgba(100, 181, 246, 0.05)
+                );
+                border-radius: 6px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--primary-blue);
+                font-weight: 600;
+                border: 2px dashed rgba(25, 118, 210, 0.2);
+            }
+
+            /* Department List */
+            .dept-list {
+                list-style: none;
+            }
+
+            .dept-item {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 0.75rem 0;
+                border-bottom: 1px solid var(--border-light);
+            }
+
+            .dept-item:last-child {
+                border-bottom: none;
+            }
+
+            .dept-name {
+                font-weight: 500;
+                color: var(--text-primary);
+            }
+
+            .dept-count {
+                background: var(--primary-blue);
+                color: white;
+                padding: 0.25rem 0.5rem;
+                border-radius: 12px;
+                font-size: 0.8rem;
+                font-weight: 600;
+            }
+
+            /* Action Buttons */
+            .btn {
+                padding: 0.5rem 1rem;
+                border: none;
+                border-radius: 6px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.5rem;
+                font-size: 0.9rem;
+            }
+
+            .btn-primary {
+                background: var(--primary-blue);
+                color: white;
+            }
+
+            .btn-primary:hover {
+                background: #1565c0;
+                transform: translateY(-1px);
+                box-shadow: var(--shadow-md);
+            }
+
+            .btn-outline {
+                background: transparent;
+                color: var(--primary-blue);
+                border: 1px solid var(--primary-blue);
+            }
+
+            .btn-outline:hover {
+                background: var(--primary-blue);
+                color: white;
+            }
+
+            /* Footer */
+            .footer {
+                margin-left: 260px;
+                background: var(--card-white);
+                border-top: 1px solid var(--border-light);
+                padding: 1rem 2rem;
+                color: var(--text-secondary);
+                font-size: 0.9rem;
+                text-align: center;
+            }
+
+            /* Responsive */
+            @media (max-width: 768px) {
+                .sidebar {
+                    transform: translateX(-100%);
+                    transition: transform 0.3s ease;
+                }
+
+                .main-content,
+                .footer {
+                    margin-left: 0;
+                }
+
+                .dashboard-grid {
+                    grid-template-columns: 1fr;
+                }
+
+                .stats-grid {
+                    grid-template-columns: 1fr;
+                }
+            }
+
+            /* Utility Classes */
+            .text-center {
+                text-align: center;
+            }
+            .mb-1 {
+                margin-bottom: 0.5rem;
+            }
+            .mb-2 {
+                margin-bottom: 1rem;
+            }
+            .mb-3 {
+                margin-bottom: 1.5rem;
+            }
+        </style>
+    </head>
+    <body>
+        <!-- Header -->
+        <header class="header">
+            <div class="logo-section">
+                <img class="logo-placeholder" src="sunrise.png" />
+                <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+            </div>
+            <div class="user-info">
+                <span class="user-name">Dr. Archana Prasanth</span>
+                <div class="user-avatar">AP</div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="dashboard.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"
+                            />
+                        </svg>
+                        Dashboard
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="patient-management.html" class="nav-link active">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"
+                            />
+                        </svg>
+                        Patient Management
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="appointments.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"
+                            />
+                        </svg>
+                        Appointments
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="medical-records.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"
+                            />
+                        </svg>
+                        Medical Records
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="prescriptions.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"
+                            />
+                        </svg>
+                        Prescriptions
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="lab-radiology.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"
+                            />
+                        </svg>
+                        Lab & Radiology
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="billing.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"
+                            />
+                        </svg>
+                        Billing
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="reports.html" class="nav-link">
+                        <svg class="nav-icon" viewBox="0 0 24 24">
+                            <path
+                                d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"
+                            />
+                        </svg>
+                        Reports & Analytics
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Header -->
+            <div class="dashboard-header">
+                <h1 class="dashboard-title">Dashboard Overview</h1>
+                <p class="dashboard-subtitle">
+                    Today's summary and patient management center
+                </p>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">247</div>
+                            <div class="stat-label">Total Active Patients</div>
+                            <div class="stat-change positive">
+                                ↗ +12 since yesterday
+                            </div>
+                        </div>
+                        <div class="stat-icon primary">👥</div>
+                    </div>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">34</div>
+                            <div class="stat-label">Today's Appointments</div>
+                            <div class="stat-change positive">
+                                ↗ 89% attendance rate
+                            </div>
+                        </div>
+                        <div class="stat-icon warning">📅</div>
+                    </div>
+                </div>
+
+                <div class="stat-card error">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">8</div>
+                            <div class="stat-label">Critical Alerts</div>
+                            <div class="stat-change negative">
+                                ↗ +3 requiring attention
+                            </div>
+                        </div>
+                        <div class="stat-icon error">⚠️</div>
+                    </div>
+                </div>
+
+                <div class="stat-card success">
+                    <div class="stat-header">
+                        <div>
+                            <div class="stat-number">15</div>
+                            <div class="stat-label">Pending Lab Results</div>
+                            <div class="stat-change positive">
+                                ↗ 92% processed on time
+                            </div>
+                        </div>
+                        <div class="stat-icon success">🔬</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Patient Management by Department -->
+                <div class="department-section">
+                    <div class="department-header">
+                        <h2 class="section-title">
+                            Today's Patients by Department
+                        </h2>
+                        <a href="#" class="btn btn-primary">+ New Patient</a>
+                    </div>
+
+                    <div class="department-tabs">
+                        <button
+                            class="tab-btn active"
+                            onclick="showDepartment('cardiology')"
+                        >
+                            Medicine (18)
+                        </button>
+                        <button
+                            class="tab-btn"
+                            onclick="showDepartment('orthopedics')"
+                        >
+                            Orthopedics (12)
+                        </button>
+                        <button
+                            class="tab-btn"
+                            onclick="showDepartment('emergency')"
+                        >
+                            Emergency (9)
+                        </button>
+                        <button
+                            class="tab-btn"
+                            onclick="showDepartment('general')"
+                        >
+                            Pulmonology (15)
+                        </button>
+                    </div>
+
+                    <div id="cardiology" class="tab-content">
+                        <table class="patient-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Condition</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">C-9528</span>
+                                    </td>
+                                    <td><strong>Kuttiyamma</strong></td>
+                                    <td>70</td>
+                                    <td>Acute MI</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-high"
+                                            >High</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">C-8717</span>
+                                    </td>
+                                    <td>A A Parikutty</td>
+                                    <td>65</td>
+                                    <td>Hypertension</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-medium"
+                                            >Medium</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status-badge status-waiting"
+                                            >Waiting</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">C-1287</span>
+                                    </td>
+                                    <td>Rajesh Kumar</td>
+                                    <td>58</td>
+                                    <td>Chest Pain</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-medium"
+                                            >Medium</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">C-1789</span>
+                                    </td>
+                                    <td>Mary Thomas</td>
+                                    <td>72</td>
+                                    <td>Heart Failure</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-high"
+                                            >High</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">C-3899</span>
+                                    </td>
+                                    <td>Suresh Nair</td>
+                                    <td>49</td>
+                                    <td>Palpitations</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-low"
+                                            >Low</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status-badge status-waiting"
+                                            >Waiting</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div
+                        id="orthopedics"
+                        class="tab-content"
+                        style="display: none"
+                    >
+                        <table class="patient-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Condition</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">O-5542</span>
+                                    </td>
+                                    <td>K P Mohammed</td>
+                                    <td>67</td>
+                                    <td>Hip Fracture</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-high"
+                                            >High</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">O-1084</span>
+                                    </td>
+                                    <td>Kasim Quraish</td>
+                                    <td>52</td>
+                                    <td>Knee Surgery</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-medium"
+                                            >Medium</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status-badge status-waiting"
+                                            >Waiting</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">O-9664</span>
+                                    </td>
+                                    <td>Litty Martin</td>
+                                    <td>34</td>
+                                    <td>Spinal Injury</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-high"
+                                            >High</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div
+                        id="emergency"
+                        class="tab-content"
+                        style="display: none"
+                    >
+                        <table class="patient-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Condition</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">E-9158</span>
+                                    </td>
+                                    <td>Mohanan P K</td>
+                                    <td>45</td>
+                                    <td>Trauma</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-high"
+                                            >High</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">E-9720</span>
+                                    </td>
+                                    <td>Muhammed E</td>
+                                    <td>28</td>
+                                    <td>Poisoning</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-high"
+                                            >High</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div id="general" class="tab-content" style="display: none">
+                        <table class="patient-table">
+                            <thead>
+                                <tr>
+                                    <th>Patient ID</th>
+                                    <th>Name</th>
+                                    <th>Age</th>
+                                    <th>Condition</th>
+                                    <th>Priority</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">G-9695</span>
+                                    </td>
+                                    <td>Nalini</td>
+                                    <td>42</td>
+                                    <td>Diabetes</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-low"
+                                            >Low</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span
+                                            class="status-badge status-waiting"
+                                            >Waiting</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <span class="patient-id">G-9404</span>
+                                    </td>
+                                    <td>Pious Kurian</td>
+                                    <td>35</td>
+                                    <td>Fever</td>
+                                    <td>
+                                        <span
+                                            class="priority-badge priority-low"
+                                            >Low</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <span class="status-badge status-active"
+                                            >Active</span
+                                        >
+                                    </td>
+                                    <td>
+                                        <a href="#" class="btn btn-primary"
+                                            >View</a
+                                        >
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Sidebar -->
+                <div class="quick-stats">
+                    <!-- Department Distribution -->
+                    <div class="stat-widget">
+                        <h3 class="widget-title">Department Distribution</h3>
+                        <ul class="dept-list">
+                            <li class="dept-item">
+                                <span class="dept-name">Medicine</span>
+                                <span class="dept-count">18</span>
+                            </li>
+                            <li class="dept-item">
+                                <span class="dept-name">Pulmonology</span>
+                                <span class="dept-count">15</span>
+                            </li>
+                            <li class="dept-item">
+                                <span class="dept-name">Orthopedics</span>
+                                <span class="dept-count">12</span>
+                            </li>
+                            <li class="dept-item">
+                                <span class="dept-name">Emergency</span>
+                                <span class="dept-count">9</span>
+                            </li>
+                            <li class="dept-item">
+                                <span class="dept-name">Pediatrics</span>
+                                <span class="dept-count">7</span>
+                            </li>
+                            <li class="dept-item">
+                                <span class="dept-name">Surgery</span>
+                                <span class="dept-count">6</span>
+                            </li>
+                        </ul>
+                    </div>
+
+                    <!-- Bed Occupancy -->
+                    <div class="stat-widget">
+                        <h3 class="widget-title">Bed Occupancy</h3>
+                        <div style="margin-bottom: 1rem">
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    margin-bottom: 0.5rem;
+                                "
+                            >
+                                <span>General Ward</span>
+                                <span><strong>85%</strong></span>
+                            </div>
+                            <div
+                                style="
+                                    width: 100%;
+                                    background: #e2e8f0;
+                                    border-radius: 4px;
+                                    height: 8px;
+                                "
+                            >
+                                <div
+                                    style="
+                                        width: 85%;
+                                        background: var(--primary-blue);
+                                        border-radius: 4px;
+                                        height: 8px;
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                        <div style="margin-bottom: 1rem">
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    margin-bottom: 0.5rem;
+                                "
+                            >
+                                <span>ICU</span>
+                                <span><strong>92%</strong></span>
+                            </div>
+                            <div
+                                style="
+                                    width: 100%;
+                                    background: #e2e8f0;
+                                    border-radius: 4px;
+                                    height: 8px;
+                                "
+                            >
+                                <div
+                                    style="
+                                        width: 92%;
+                                        background: var(--warning-orange);
+                                        border-radius: 4px;
+                                        height: 8px;
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div
+                                style="
+                                    display: flex;
+                                    justify-content: space-between;
+                                    margin-bottom: 0.5rem;
+                                "
+                            >
+                                <span>Private Rooms</span>
+                                <span><strong>67%</strong></span>
+                            </div>
+                            <div
+                                style="
+                                    width: 100%;
+                                    background: #e2e8f0;
+                                    border-radius: 4px;
+                                    height: 8px;
+                                "
+                            >
+                                <div
+                                    style="
+                                        width: 67%;
+                                        background: var(--success-green);
+                                        border-radius: 4px;
+                                        height: 8px;
+                                    "
+                                ></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>
+                &copy; 2025 Sunrise Hospital - Erattupetta. EMR Concept designed
+                and developed by Dr. Farhan for <strong>Qatalyst LLP</strong>
+            </p>
+        </footer>
+
+        <script>
+            function showDepartment(department) {
+                // Hide all tab contents
+                const contents = document.querySelectorAll(".tab-content");
+                contents.forEach((content) => (content.style.display = "none"));
+
+                // Remove active class from all tabs
+                const tabs = document.querySelectorAll(".tab-btn");
+                tabs.forEach((tab) => tab.classList.remove("active"));
+
+                // Show selected content and activate tab
+                document.getElementById(department).style.display = "block";
+                event.target.classList.add("active");
+            }
+
+            // Add interactive hover effects
+            document.querySelectorAll(".stat-card").forEach((card) => {
+                card.addEventListener("mouseenter", function () {
+                    this.style.transform = "translateY(-2px)";
+                    this.style.boxShadow = "var(--shadow-md)";
+                });
+
+                card.addEventListener("mouseleave", function () {
+                    this.style.transform = "translateY(0)";
+                    this.style.boxShadow = "var(--shadow-sm)";
+                });
+            });
+
+            // Add navigation functionality
+            document.querySelectorAll(".nav-link").forEach((link) => {
+                link.addEventListener("click", function (e) {
+                    e.preventDefault();
+                    document
+                        .querySelectorAll(".nav-link")
+                        .forEach((nav) => nav.classList.remove("active"));
+                    this.classList.add("active");
+                });
+            });
+
+            // Simulate real-time updates
+            setInterval(() => {
+                // Update some random metrics to show real-time feel
+                const criticalAlerts = document.querySelector(
+                    ".stat-card.error .stat-number",
+                );
+                if (criticalAlerts) {
+                    const current = parseInt(criticalAlerts.textContent);
+                    const change =
+                        Math.random() > 0.7
+                            ? Math.random() > 0.5
+                                ? 1
+                                : -1
+                            : 0;
+                    criticalAlerts.textContent = Math.max(0, current + change);
+                }
+            }, 30000); // Update every 30 seconds
+        </script>
+    </body>
+</html>
