@@ -1,0 +1,1072 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Medical Records - Sunrise Hospital EMR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Medical-grade Color Palette */
+        :root {
+            --primary-blue: #1976d2;
+            --light-blue: #64b5f6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --error-red: #f44336;
+            --background: #f8f9fa;
+            --card-white: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --border-primary: #1976d2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 64px;
+        }
+
+          .logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+
+        .hospital-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 260px;
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-right-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Patient Banner */
+        .patient-banner {
+            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
+            color: white;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .patient-info {
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .patient-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        .patient-details h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .patient-meta {
+            display: flex;
+            gap: 2rem;
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .banner-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Records Layout */
+        .records-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            height: calc(100vh - 164px);
+        }
+
+        /* Record Navigation */
+        .record-nav {
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            overflow-y: auto;
+        }
+
+        .nav-section {
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .nav-section-header {
+            padding: 1rem 1.5rem;
+            background: var(--background);
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .nav-section-items {
+            list-style: none;
+        }
+
+        .nav-section-item {
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .nav-section-link {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-section-link:hover, .nav-section-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-left-color: var(--primary-blue);
+        }
+
+        .section-badge {
+            background: var(--error-red);
+            color: white;
+            padding: 0.2rem 0.4rem;
+            border-radius: 10px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .section-badge.warning {
+            background: var(--warning-orange);
+        }
+
+        .section-badge.success {
+            background: var(--success-green);
+        }
+
+        /* Record Content */
+        .record-content {
+            background: var(--card-white);
+            overflow-y: auto;
+            padding: 2rem;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .content-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .content-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Form Sections */
+        .form-section {
+            background: var(--card-white);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            overflow: hidden;
+        }
+
+        .section-header {
+            background: var(--background);
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .section-content {
+            padding: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+            font-family: inherit;
+        }
+
+        .form-input:focus, .form-textarea:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        .form-textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        /* Alert Boxes */
+        .alert {
+            padding: 1rem;
+            border-radius: 6px;
+            margin-bottom: 1.5rem;
+            border-left: 4px solid;
+        }
+
+        .alert-danger {
+            background: rgba(244, 67, 54, 0.1);
+            border-left-color: var(--error-red);
+            color: var(--error-red);
+        }
+
+        .alert-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-left-color: var(--warning-orange);
+            color: var(--warning-orange);
+        }
+
+        .alert-success {
+            background: rgba(76, 175, 80, 0.1);
+            border-left-color: var(--success-green);
+            color: var(--success-green);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: var(--primary-blue);
+            border: 1px solid var(--primary-blue);
+        }
+
+        /* Timeline */
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 1rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--border-light);
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 2rem;
+            background: var(--card-white);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.75rem;
+            top: 1.5rem;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--primary-blue);
+            border: 3px solid var(--card-white);
+        }
+
+        .timeline-date {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .timeline-content {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        /* Vitals Grid */
+        .vitals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .vital-card {
+            background: var(--background);
+            border: 1px solid var(--border-light);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .vital-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .vital-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .vital-unit {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .vital-status {
+            margin-top: 0.5rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .vital-normal {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-green);
+        }
+
+        .vital-high {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error-red);
+        }
+
+        .vital-low {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-orange);
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: 260px;
+            background: var(--card-white);
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .records-layout {
+                grid-template-columns: 1fr;
+            }
+
+            .patient-banner {
+                flex-direction: column;
+                text-align: center;
+                gap: 1rem;
+            }
+
+            .patient-info {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+           <img class="logo-placeholder" src="sunrise.png" />
+            <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Dr. Archana Prasanth</span>
+            <div class="user-avatar">AP</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="patient-management.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Patient Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="appointments.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="medical-records.html" class="nav-link active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"/>
+                    </svg>
+                    Medical Records
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="prescriptions.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"/>
+                    </svg>
+                    Prescriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="lab-radiology.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"/>
+                    </svg>
+                    Lab & Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="billing.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"/>
+                    </svg>
+                    Billing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                    </svg>
+                    Reports & Analytics
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Patient Banner -->
+        <div class="patient-banner">
+            <div class="patient-info">
+                <div class="patient-avatar">K</div>
+                <div class="patient-details">
+                    <h1>Kuttiyamma</h1>
+                    <div class="patient-meta">
+                        <span>MRN: HOS-9528</span>
+                        <span>•</span>
+                        <span>DOB: 01/Jan/1955 (70 Years)</span>
+                        <span>•</span>
+                        <span>Female</span>
+                        <span>•</span>
+                        <span>Blood Type: B+</span>
+                    </div>
+                </div>
+            </div>
+            <div class="banner-actions">
+                <button class="btn btn-outline">Print Record</button>
+                <button class="btn" style="background: white; color: var(--primary-blue);">Share Record</button>
+            </div>
+        </div>
+
+        <!-- Records Layout -->
+        <div class="records-layout">
+            <!-- Record Navigation -->
+            <div class="record-nav">
+                <div class="nav-section">
+                    <div class="nav-section-header">Overview</div>
+                    <ul class="nav-section-items">
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link active" onclick="showSection('overview')">
+                                Summary
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('vitals')">
+                                Vitals & Measurements
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-header">Clinical</div>
+                    <ul class="nav-section-items">
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('history')">
+                                Medical History
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('allergies')">
+                                Allergies & Alerts
+                                <span class="section-badge">1</span>
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('medications')">
+                                Current Medications
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('problems')">
+                                Problem List
+                                <span class="section-badge">2</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-header">Care Documentation</div>
+                    <ul class="nav-section-items">
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('notes')">
+                                Progress Notes
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('assessments')">
+                                Assessments
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('procedures')">
+                                Procedures
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('discharge')">
+                                Discharge Planning
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-header">Results</div>
+                    <ul class="nav-section-items">
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('lab-results')">
+                                Lab Results
+                                <span class="section-badge warning">3</span>
+                            </a>
+                        </li>
+                        <li class="nav-section-item">
+                            <a href="#" class="nav-section-link" onclick="showSection('imaging')">
+                                Imaging & Reports
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Record Content -->
+            <div class="record-content">
+                <!-- Overview Section -->
+                <div id="overview" class="content-section">
+                    <div class="content-header">
+                        <h2 class="content-title">Patient Summary</h2>
+                        <div class="content-actions">
+                            <button class="btn btn-secondary">Edit Summary</button>
+                            <button class="btn btn-primary">Add Note</button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <strong>⚠️ Critical Alert:</strong> Patient has severe Penicillin allergy (Anaphylaxis). Current diagnosis: Acute STEMI requiring immediate intervention.
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">Current Admission</div>
+                        <div class="section-content">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Admission Date</label>
+                                    <input type="text" class="form-input" value="22/Jun/2025" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Admitting Physician</label>
+                                    <input type="text" class="form-input" value="Dr. Archana Prasanth" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Department</label>
+                                    <input type="text" class="form-input" value="Cardiology" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Room Number</label>
+                                    <input type="text" class="form-input" value="CCU-204" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Chief Complaint</label>
+                                <textarea class="form-textarea" readonly>Severe chest pain radiating to left arm, onset 3 hours ago, associated with shortness of breath and diaphoresis. Patient describes pain as crushing, 9/10 severity.</textarea>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Primary Diagnosis</label>
+                                <textarea class="form-textarea" readonly>Acute ST-Elevation Myocardial Infarction (STEMI) - Anterior Wall. ICD-10: I21.09</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">Recent Activity Timeline</div>
+                        <div class="section-content">
+                            <div class="timeline">
+                                <div class="timeline-item">
+                                    <div class="timeline-date">25/Jun/2025 - 10:30 AM</div>
+                                    <div class="timeline-title">Cardiology Follow-up Visit</div>
+                                    <div class="timeline-content">
+                                        Post-MI care assessment. Patient stable, pain controlled. Echo shows LVEF 45%. Continuing current medication regimen.
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-date">24/Jun/2025 - 2:00 PM</div>
+                                    <div class="timeline-title">Cardiac Catheterization</div>
+                                    <div class="timeline-content">
+                                        Successful PCI with stent placement to LAD. Door-to-balloon time: 78 minutes. Patient tolerated procedure well.
+                                    </div>
+                                </div>
+                                <div class="timeline-item">
+                                    <div class="timeline-date">22/Jun/2025 - 11:45 PM</div>
+                                    <div class="timeline-title">Emergency Department Arrival</div>
+                                    <div class="timeline-content">
+                                        Presented with acute chest pain. 12-lead ECG showed ST elevation in V1-V4. Troponin elevated at 25.6 ng/mL.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vitals Section -->
+                <div id="vitals" class="content-section" style="display: none;">
+                    <div class="content-header">
+                        <h2 class="content-title">Vitals & Measurements</h2>
+                        <div class="content-actions">
+                            <button class="btn btn-secondary">View Trends</button>
+                            <button class="btn btn-primary">Record New Vitals</button>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">Current Vitals (25/Jun/2025 - 8:00 AM)</div>
+                        <div class="section-content">
+                            <div class="vitals-grid">
+                                <div class="vital-card">
+                                    <div class="vital-label">Blood Pressure</div>
+                                    <div class="vital-value">128/82</div>
+                                    <div class="vital-unit">mmHg</div>
+                                    <div class="vital-status vital-normal">Normal</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Heart Rate</div>
+                                    <div class="vital-value">78</div>
+                                    <div class="vital-unit">bpm</div>
+                                    <div class="vital-status vital-normal">Normal</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Temperature</div>
+                                    <div class="vital-value">98.6</div>
+                                    <div class="vital-unit">°F</div>
+                                    <div class="vital-status vital-normal">Normal</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Respiratory Rate</div>
+                                    <div class="vital-value">16</div>
+                                    <div class="vital-unit">breaths/min</div>
+                                    <div class="vital-status vital-normal">Normal</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Oxygen Saturation</div>
+                                    <div class="vital-value">97</div>
+                                    <div class="vital-unit">%</div>
+                                    <div class="vital-status vital-normal">Normal</div>
+                                </div>
+                                <div class="vital-card">
+                                    <div class="vital-label">Weight</div>
+                                    <div class="vital-value">68</div>
+                                    <div class="vital-unit">kg</div>
+                                    <div class="vital-status vital-normal">Normal</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">BMI & Body Measurements</div>
+                        <div class="section-content">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Height</label>
+                                    <input type="text" class="form-input" value="158 cm" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Weight</label>
+                                    <input type="text" class="form-input" value="68 kg" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">BMI</label>
+                                    <input type="text" class="form-input" value="27.2 (Overweight)" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Body Surface Area</label>
+                                    <input type="text" class="form-input" value="1.7 m²" readonly>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Allergies Section -->
+                <div id="allergies" class="content-section" style="display: none;">
+                    <div class="content-header">
+                        <h2 class="content-title">Allergies & Alerts</h2>
+                        <div class="content-actions">
+                            <button class="btn btn-secondary">Add Allergy</button>
+                            <button class="btn btn-primary">Update Alert</button>
+                        </div>
+                    </div>
+
+                    <div class="alert alert-danger">
+                        <strong>⚠️ Critical Allergy Alert:</strong> Patient has documented severe allergic reactions. Review all medications before prescribing.
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">Known Allergies</div>
+                        <div class="section-content">
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Allergen</label>
+                                    <input type="text" class="form-input" value="Penicillin" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Reaction Type</label>
+                                    <input type="text" class="form-input" value="Anaphylaxis" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Severity</label>
+                                    <input type="text" class="form-input" value="Severe/Life-threatening" readonly>
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Date Discovered</label>
+                                    <input type="text" class="form-input" value="15/Mar/2020" readonly>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Reaction Details</label>
+                                <textarea class="form-textarea" readonly>Patient developed severe anaphylactic reaction with bronchospasm, hypotension, and urticaria after receiving Penicillin injection. Required epinephrine and ICU admission.</textarea>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section">
+                        <div class="section-header">Drug Interaction Alerts</div>
+                        <div class="section-content">
+                            <div class="alert alert-warning">
+                                <strong>Drug Interaction Warning:</strong> Current medications (Aspirin + Clopidogrel) may increase bleeding risk. Monitor for signs of bleeding.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Other sections would be added similarly -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Sunrise Hospital - Erattupetta. EMR System designed and developed by <strong>Qatalyst LLP</strong></p>
+    </footer>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(section => {
+                section.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.nav-section-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(sectionId).style.display = 'block';
+            
+            // Add active class to clicked link
+            event.target.classList.add('active');
+            
+            // Update content title based on section
+            const titles = {
+                'overview': 'Patient Summary',
+                'vitals': 'Vitals & Measurements',
+                'history': 'Medical History',
+                'allergies': 'Allergies & Alerts',
+                'medications': 'Current Medications',
+                'problems': 'Problem List',
+                'notes': 'Progress Notes',
+                'assessments': 'Clinical Assessments',
+                'procedures': 'Procedures & Interventions',
+                'discharge': 'Discharge Planning',
+                'lab-results': 'Laboratory Results',
+                'imaging': 'Imaging & Reports'
+            };
+            
+            const contentTitle = document.querySelector('.content-title');
+            if (contentTitle && titles[sectionId]) {
+                contentTitle.textContent = titles[sectionId];
+            }
+        }
+
+        // Form input focus effects
+        document.querySelectorAll('.form-input, .form-textarea, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--primary-blue)';
+                this.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = 'var(--border-light)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Button click effects
+        document.querySelectorAll('.btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.style.transform = 'scale(0.98)';
+                setTimeout(() => {
+                    this.style.transform = '';
+                }, 150);
+            });
+        });
+
+        // Simulate real-time vital signs updates
+        setInterval(() => {
+            if (Math.random() > 0.9) {
+                const heartRateValue = document.querySelector('.vital-card:nth-child(2) .vital-value');
+                if (heartRateValue && document.getElementById('vitals').style.display !== 'none') {
+                    const currentHR = parseInt(heartRateValue.textContent);
+                    const newHR = currentHR + (Math.random() > 0.5 ? 1 : -1);
+                    heartRateValue.textContent = Math.max(60, Math.min(100, newHR));
+                }
+            }
+        }, 15000);
+    </script>
+</body>
+</html>
