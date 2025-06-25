@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Management - Sunrise Hospital EMR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8f9fa;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        /* Medical-grade Color Palette */
+        :root {
+            --primary-blue: #1976d2;
+            --light-blue: #64b5f6;
+            --success-green: #4caf50;
+            --warning-orange: #ff9800;
+            --error-red: #f44336;
+            --background: #f8f9fa;
+            --card-white: #ffffff;
+            --text-primary: #2c3e50;
+            --text-secondary: #64748b;
+            --border-light: #e2e8f0;
+            --border-primary: #1976d2;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --shadow-lg: 0 8px 25px rgba(0,0,0,0.12);
+        }
+
+        /* Header */
+        .header {
+            background: var(--card-white);
+            border-bottom: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: var(--shadow-md);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            height: 64px;
+        }
+
+.logo-section {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+            }
+
+            .logo-placeholder {
+                width: 100px;
+                height: 90;
+
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: white;
+
+                border: 2px dashed rgba(255, 255, 255, 0.3);
+            }
+
+        .hospital-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary-blue);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--success-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .user-name {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 64px;
+            height: calc(100vh - 64px);
+            width: 260px;
+            background: var(--card-white);
+            border-right: 1px solid var(--border-light);
+            padding: 1.5rem 0;
+            overflow-y: auto;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-menu {
+            list-style: none;
+        }
+
+        .nav-item {
+            margin: 0.25rem 0;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem 1.5rem;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            border-right: 3px solid transparent;
+        }
+
+        .nav-link:hover, .nav-link.active {
+            background: rgba(25, 118, 210, 0.05);
+            color: var(--primary-blue);
+            border-right-color: var(--primary-blue);
+        }
+
+        .nav-icon {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-left: 260px;
+            margin-top: 64px;
+            padding: 2rem;
+            min-height: calc(100vh - 64px);
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        /* Search and Filters */
+        .search-section {
+            background: var(--card-white);
+            border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: var(--shadow-sm);
+            margin-bottom: 2rem;
+        }
+
+        .search-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .form-input, .form-select {
+            padding: 0.75rem;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-input:focus, .form-select:focus {
+            outline: none;
+            border-color: var(--primary-blue);
+            box-shadow: 0 0 0 3px rgba(25, 118, 210, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--background);
+            color: var(--text-primary);
+            border: 1px solid var(--border-light);
+        }
+
+        .btn-success {
+            background: var(--success-green);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.8rem;
+        }
+
+        /* Patient Grid */
+        .patients-grid {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 2rem;
+        }
+
+        /* Patient List */
+        .patient-list-section {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            overflow: hidden;
+        }
+
+        .section-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .patient-card {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .patient-card:hover {
+            background: rgba(25, 118, 210, 0.02);
+        }
+
+        .patient-card.selected {
+            background: rgba(25, 118, 210, 0.05);
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 1rem;
+        }
+
+        .patient-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 0.25rem;
+        }
+
+        .patient-id {
+            font-size: 0.9rem;
+            color: var(--primary-blue);
+            font-weight: 500;
+        }
+
+        .patient-details {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .detail-item {
+            font-size: 0.9rem;
+        }
+
+        .detail-label {
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .detail-value {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .patient-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-priority-high {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--error-red);
+        }
+
+        .badge-priority-medium {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-orange);
+        }
+
+        .badge-priority-low {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-green);
+        }
+
+        .badge-status {
+            background: rgba(25, 118, 210, 0.1);
+            color: var(--primary-blue);
+        }
+
+        /* Patient Details Panel */
+        .patient-details-panel {
+            background: var(--card-white);
+            border-radius: 8px;
+            box-shadow: var(--shadow-sm);
+            position: sticky;
+            top: 2rem;
+            max-height: calc(100vh - 150px);
+            overflow-y: auto;
+        }
+
+        .panel-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-light);
+            background: linear-gradient(135deg, var(--primary-blue), var(--light-blue));
+            color: white;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .panel-content {
+            padding: 1.5rem;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .info-item {
+            padding: 1rem;
+            background: var(--background);
+            border-radius: 6px;
+        }
+
+        .info-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-bottom: 0.25rem;
+        }
+
+        .info-value {
+            font-size: 1rem;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .recent-visits {
+            margin-top: 2rem;
+        }
+
+        .visit-item {
+            padding: 1rem;
+            border: 1px solid var(--border-light);
+            border-radius: 6px;
+            margin-bottom: 0.5rem;
+        }
+
+        .visit-date {
+            font-weight: 600;
+            color: var(--primary-blue);
+            font-size: 0.9rem;
+        }
+
+        .visit-details {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        /* Footer */
+        .footer {
+            margin-left: 260px;
+            background: var(--card-white);
+            border-top: 1px solid var(--border-light);
+            padding: 1rem 2rem;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            text-align: center;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+
+            .main-content, .footer {
+                margin-left: 0;
+            }
+
+            .patients-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .search-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header class="header">
+        <div class="logo-section">
+           <img class="logo-placeholder" src="sunrise.png" />
+            <div class="hospital-name">Sunrise Hospital - Erattupetta</div>
+        </div>
+        <div class="user-info">
+            <span class="user-name">Dr. Archana Prasanth</span>
+            <div class="user-avatar">AP</div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <nav class="sidebar">
+        <ul class="nav-menu">
+            <li class="nav-item">
+                <a href="dashboard.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z"/>
+                    </svg>
+                    Dashboard
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="patient-management.html" class="nav-link active">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    Patient Management
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="appointments.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/>
+                    </svg>
+                    Appointments
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="medical-records.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 2 2h8c1.1 0 2-.9 2-2V8l-6-6z"/>
+                    </svg>
+                    Medical Records
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="prescriptions.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M19 8H5c-1.66 0-3 1.34-3 3v6c0 1.66 1.34 3 3 3h14c1.66 0 3-1.34 3-3v-6c0-1.66-1.34-3-3-3z"/>
+                    </svg>
+                    Prescriptions
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="lab-radiology.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M9 11H7v6h2v-6zm4 0h-2v6h2v-6zm4 0h-2v6h2v-6z"/>
+                    </svg>
+                    Lab & Radiology
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="billing.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1.41 16.09V20h-2.67v-1.93c-1.71-.36-3.16-1.46-3.27-3.4h1.96c.1 1.05.82 1.87 2.65 1.87z"/>
+                    </svg>
+                    Billing
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="reports.html" class="nav-link">
+                    <svg class="nav-icon" viewBox="0 0 24 24">
+                        <path d="M3.5 18.49l6-6.01 4 4L22 6.92l-1.41-1.41-7.09 7.97-4-4L2 16.99z"/>
+                    </svg>
+                    Reports & Analytics
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Page Header -->
+        <div class="page-header">
+            <h1 class="page-title">Patient Management</h1>
+            <div class="header-actions">
+                <button class="btn btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    Import Patients
+                </button>
+                <button class="btn btn-primary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+                    </svg>
+                    Add New Patient
+                </button>
+            </div>
+        </div>
+
+        <!-- Search and Filters -->
+        <div class="search-section">
+            <div class="search-grid">
+                <div class="form-group">
+                    <label class="form-label">Search Patient</label>
+                    <input type="text" class="form-input" placeholder="Search by name, ID, phone, or MRN..." id="searchInput">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Department</label>
+                    <select class="form-select" id="departmentFilter">
+                        <option value="">All Departments</option>
+                        <option value="cardiology">Cardiology</option>
+                        <option value="orthopedics">Orthopedics</option>
+                        <option value="general">General Medicine</option>
+                        <option value="emergency">Emergency</option>
+                        <option value="pediatrics">Pediatrics</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Status</label>
+                    <select class="form-select" id="statusFilter">
+                        <option value="">All Status</option>
+                        <option value="active">Active</option>
+                        <option value="discharged">Discharged</option>
+                        <option value="follow-up">Follow-up</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Priority</label>
+                    <select class="form-select" id="priorityFilter">
+                        <option value="">All Priorities</option>
+                        <option value="high">High</option>
+                        <option value="medium">Medium</option>
+                        <option value="low">Low</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <button class="btn btn-primary" onclick="searchPatients()">Search</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Patients Grid -->
+        <div class="patients-grid">
+            <!-- Patient List -->
+            <div class="patient-list-section">
+                <div class="section-header">
+                    <h2 class="section-title">Patient List (247 patients)</h2>
+                    <select class="form-select" style="width: auto;">
+                        <option>Sort by: Recent Activity</option>
+                        <option>Sort by: Name</option>
+                        <option>Sort by: Priority</option>
+                        <option>Sort by: Department</option>
+                    </select>
+                </div>
+
+                <div class="patient-card selected" onclick="selectPatient(this, 'kuttiyamma')">
+                    <div class="patient-header">
+                        <div>
+                            <div class="patient-name">Kuttiyamma</div>
+                            <div class="patient-id">MRN: HOS-9528</div>
+                        </div>
+                        <div class="patient-badges">
+                            <span class="badge badge-priority-high">High Priority</span>
+                            <span class="badge badge-status">Active</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Age</div>
+                            <div class="detail-value">70 Years</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">Cardiology</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Visit</div>
+                            <div class="detail-value">Today</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-card" onclick="selectPatient(this, 'parikutty')">
+                    <div class="patient-header">
+                        <div>
+                            <div class="patient-name">A A Parikutty</div>
+                            <div class="patient-id">MRN: HOS-8717</div>
+                        </div>
+                        <div class="patient-badges">
+                            <span class="badge badge-priority-medium">Medium Priority</span>
+                            <span class="badge badge-status">Active</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Age</div>
+                            <div class="detail-value">65 Years</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">Cardiology</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Visit</div>
+                            <div class="detail-value">Yesterday</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-card" onclick="selectPatient(this, 'dhanya')">
+                    <div class="patient-header">
+                        <div>
+                            <div class="patient-name">Dhanya Mathew</div>
+                            <div class="patient-id">MRN: HOS-1287</div>
+                        </div>
+                        <div class="patient-badges">
+                            <span class="badge badge-priority-low">Low Priority</span>
+                            <span class="badge badge-status">Follow-up</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Age</div>
+                            <div class="detail-value">34 Years</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">General Medicine</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Visit</div>
+                            <div class="detail-value">2 days ago</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-card" onclick="selectPatient(this, 'mohammed')">
+                    <div class="patient-header">
+                        <div>
+                            <div class="patient-name">K P Mohammed Shareef</div>
+                            <div class="patient-id">MRN: HOS-5542</div>
+                        </div>
+                        <div class="patient-badges">
+                            <span class="badge badge-priority-high">High Priority</span>
+                            <span class="badge badge-status">Active</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Age</div>
+                            <div class="detail-value">67 Years</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">Orthopedics</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Visit</div>
+                            <div class="detail-value">Today</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="patient-card" onclick="selectPatient(this, 'litty')">
+                    <div class="patient-header">
+                        <div>
+                            <div class="patient-name">Litty Martin</div>
+                            <div class="patient-id">MRN: HOS-9664</div>
+                        </div>
+                        <div class="patient-badges">
+                            <span class="badge badge-priority-high">High Priority</span>
+                            <span class="badge badge-status">Active</span>
+                        </div>
+                    </div>
+                    <div class="patient-details">
+                        <div class="detail-item">
+                            <div class="detail-label">Age</div>
+                            <div class="detail-value">34 Years</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Department</div>
+                            <div class="detail-value">Emergency</div>
+                        </div>
+                        <div class="detail-item">
+                            <div class="detail-label">Last Visit</div>
+                            <div class="detail-value">Today</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Patient Details Panel -->
+            <div class="patient-details-panel">
+                <div class="panel-header">
+                    <div class="patient-name" style="font-size: 1.25rem; margin-bottom: 0.5rem;">Kuttiyamma</div>
+                    <div style="opacity: 0.9;">MRN: HOS-9528 • Female • 70 Years</div>
+                </div>
+
+                <div class="panel-content">
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">Date of Birth</div>
+                            <div class="info-value">01/Jan/1955</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Gender</div>
+                            <div class="info-value">Female</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Blood Group</div>
+                            <div class="info-value">B+</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Contact</div>
+                            <div class="info-value">+91 9876543210</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Emergency Contact</div>
+                            <div class="info-value">Ravi Kumar (Son)</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Insurance</div>
+                            <div class="info-value">Kerala State Health</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Current Diagnosis</h3>
+                        <div style="padding: 1rem; background: rgba(244, 67, 54, 0.05); border-radius: 6px; border-left: 4px solid var(--error-red);">
+                            <strong>Acute Myocardial Infarction (STEMI)</strong><br>
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">Admitted: 22/Jun/2025 • Dr. Archana Prasanth</span>
+                        </div>
+                    </div>
+
+                    <div style="margin-bottom: 2rem;">
+                        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Allergies & Alerts</h3>
+                        <div style="padding: 1rem; background: rgba(255, 152, 0, 0.05); border-radius: 6px; border-left: 4px solid var(--warning-orange);">
+                            <strong>⚠️ Penicillin Allergy</strong><br>
+                            <span style="color: var(--text-secondary); font-size: 0.9rem;">Severe reaction - Anaphylaxis</span>
+                        </div>
+                    </div>
+
+                    <div class="recent-visits">
+                        <h3 style="font-size: 1rem; font-weight: 600; margin-bottom: 1rem; color: var(--text-primary);">Recent Visits</h3>
+                        
+                        <div class="visit-item">
+                            <div class="visit-date">25/Jun/2025 - Today</div>
+                            <div class="visit-details">Cardiology - Post-MI Care • Dr. Archana Prasanth</div>
+                        </div>
+
+                        <div class="visit-item">
+                            <div class="visit-date">22/Jun/2025</div>
+                            <div class="visit-details">Emergency - Chest Pain • Dr. Rajesh Kumar</div>
+                        </div>
+
+                        <div class="visit-item">
+                            <div class="visit-date">15/May/2025</div>
+                            <div class="visit-details">Cardiology - Routine Check-up • Dr. Archana Prasanth</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; gap: 0.5rem;">
+                        <button class="btn btn-primary btn-sm" style="flex: 1;">View Full Record</button>
+                        <button class="btn btn-secondary btn-sm" style="flex: 1;">Edit Patient</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2025 Sunrise Hospital - Erattupetta. EMR System designed and developed by <strong>Qatalyst LLP</strong></p>
+    </footer>
+
+    <script>
+        function selectPatient(element, patientId) {
+            // Remove selection from all cards
+            document.querySelectorAll('.patient-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selection to clicked card
+            element.classList.add('selected');
+            
+            // Update patient details panel based on selection
+            updatePatientDetails(patientId);
+        }
+
+        function updatePatientDetails(patientId) {
+            const patients = {
+                'kuttiyamma': {
+                    name: 'Kuttiyamma',
+                    mrn: 'HOS-9528',
+                    age: '70 Years',
+                    gender: 'Female',
+                    dob: '01/Jan/1955',
+                    bloodGroup: 'B+',
+                    contact: '+91 9876543210',
+                    emergency: 'Ravi Kumar (Son)',
+                    insurance: 'Kerala State Health',
+                    diagnosis: 'Acute Myocardial Infarction (STEMI)',
+                    diagnosisDate: '22/Jun/2025',
+                    doctor: 'Dr. Archana Prasanth',
+                    allergy: 'Penicillin Allergy - Severe reaction - Anaphylaxis'
+                },
+                'parikutty': {
+                    name: 'A A Parikutty',
+                    mrn: 'HOS-8717',
+                    age: '65 Years',
+                    gender: 'Male',
+                    dob: '15/Mar/1960',
+                    bloodGroup: 'O+',
+                    contact: '+91 9876543211',
+                    emergency: 'Priya Parikutty (Daughter)',
+                    insurance: 'Private Insurance',
+                    diagnosis: 'Hypertension with Coronary Artery Disease',
+                    diagnosisDate: '20/Jun/2025',
+                    doctor: 'Dr. Archana Prasanth',
+                    allergy: 'No known allergies'
+                }
+            };
+
+            const patient = patients[patientId];
+            if (patient) {
+                // Update panel header
+                const panelHeader = document.querySelector('.panel-header');
+                panelHeader.innerHTML = `
+                    <div class="patient-name" style="font-size: 1.25rem; margin-bottom: 0.5rem;">${patient.name}</div>
+                    <div style="opacity: 0.9;">MRN: ${patient.mrn} • ${patient.gender} • ${patient.age}</div>
+                `;
+
+                // Update info grid
+                const infoItems = document.querySelectorAll('.info-value');
+                infoItems[0].textContent = patient.dob;
+                infoItems[1].textContent = patient.gender;
+                infoItems[2].textContent = patient.bloodGroup;
+                infoItems[3].textContent = patient.contact;
+                infoItems[4].textContent = patient.emergency;
+                infoItems[5].textContent = patient.insurance;
+            }
+        }
+
+        function searchPatients() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const department = document.getElementById('departmentFilter').value;
+            const status = document.getElementById('statusFilter').value;
+            const priority = document.getElementById('priorityFilter').value;
+
+            // Simulate search functionality
+            console.log('Searching with:', { searchTerm, department, status, priority });
+            
+            // In a real application, this would filter the patient list
+            // For demo purposes, we'll just show an alert
+            if (searchTerm || department || status || priority) {
+                // Animate search
+                const searchBtn = event.target;
+                searchBtn.textContent = 'Searching...';
+                searchBtn.disabled = true;
+
+                setTimeout(() => {
+                    searchBtn.textContent = 'Search';
+                    searchBtn.disabled = false;
+                    console.log('Search completed');
+                }, 1000);
+            }
+        }
+
+        // Add keyboard shortcut for search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchPatients();
+            }
+        });
+
+        // Add focus effects to form inputs
+        document.querySelectorAll('.form-input, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.borderColor = 'var(--primary-blue)';
+                this.style.boxShadow = '0 0 0 3px rgba(25, 118, 210, 0.1)';
+            });
+            
+            input.addEventListener('blur', function() {
+                this.style.borderColor = 'var(--border-light)';
+                this.style.boxShadow = 'none';
+            });
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Update patient count occasionally
+            const countElement = document.querySelector('.section-title');
+            if (countElement && Math.random() > 0.9) {
+                const currentCount = parseInt(countElement.textContent.match(/\d+/)[0]);
+                const newCount = currentCount + (Math.random() > 0.5 ? 1 : -1);
+                countElement.textContent = `Patient List (${Math.max(0, newCount)} patients)`;
+            }
+        }, 10000);
+    </script>
+</body>
+</html>
