@@ -1247,62 +1247,60 @@ body {
             </p>
         </footer>
 
-        <script>
-            function showDepartment(department) {
-                // Hide all tab contents
-                const contents = document.querySelectorAll(".tab-content");
-                contents.forEach((content) => (content.style.display = "none"));
 
-                // Remove active class from all tabs
-                const tabs = document.querySelectorAll(".tab-btn");
-                tabs.forEach((tab) => tab.classList.remove("active"));
+    <script>
+        function showDepartment(department) {
+            // Hide all tab contents
+            const contents = document.querySelectorAll('.tab-content');
+            contents.forEach(content => content.style.display = 'none');
+            
+            // Remove active class from all tabs
+            const tabs = document.querySelectorAll('.tab-btn');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // Show selected content and activate tab
+            document.getElementById(department).style.display = 'block';
+            event.target.classList.add('active');
+        }
 
-                // Show selected content and activate tab
-                document.getElementById(department).style.display = "block";
-                event.target.classList.add("active");
-            }
-
-            // Add interactive hover effects
-            document.querySelectorAll(".stat-card").forEach((card) => {
-                card.addEventListener("mouseenter", function () {
-                    this.style.transform = "translateY(-2px)";
-                    this.style.boxShadow = "var(--shadow-md)";
-                });
-
-                card.addEventListener("mouseleave", function () {
-                    this.style.transform = "translateY(0)";
-                    this.style.boxShadow = "var(--shadow-sm)";
-                });
+        // Add interactive hover effects
+        document.querySelectorAll('.stat-card').forEach(card => {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+                this.style.boxShadow = 'var(--shadow-md)';
             });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = 'var(--shadow-sm)';
+            });
+        });
 
-            // Add navigation functionality
-            document.querySelectorAll(".nav-link").forEach((link) => {
-                link.addEventListener("click", function (e) {
+        // Add navigation functionality - only prevent default for hash links or same page
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', function(e) {
+                const href = this.getAttribute('href');
+                
+                // Only prevent default if it's a hash link or current page
+                if (href.startsWith('#') || href === window.location.pathname || href === 'dashboard.html') {
                     e.preventDefault();
-                    document
-                        .querySelectorAll(".nav-link")
-                        .forEach((nav) => nav.classList.remove("active"));
-                    this.classList.add("active");
-                });
-            });
-
-            // Simulate real-time updates
-            setInterval(() => {
-                // Update some random metrics to show real-time feel
-                const criticalAlerts = document.querySelector(
-                    ".stat-card.error .stat-number",
-                );
-                if (criticalAlerts) {
-                    const current = parseInt(criticalAlerts.textContent);
-                    const change =
-                        Math.random() > 0.7
-                            ? Math.random() > 0.5
-                                ? 1
-                                : -1
-                            : 0;
-                    criticalAlerts.textContent = Math.max(0, current + change);
+                    document.querySelectorAll('.nav-link').forEach(nav => nav.classList.remove('active'));
+                    this.classList.add('active');
                 }
-            }, 30000); // Update every 30 seconds
-        </script>
+                // For other pages, let the browser handle the navigation normally
+            });
+        });
+
+        // Simulate real-time updates
+        setInterval(() => {
+            // Update some random metrics to show real-time feel
+            const criticalAlerts = document.querySelector('.stat-card.error .stat-number');
+            if (criticalAlerts) {
+                const current = parseInt(criticalAlerts.textContent);
+                const change = Math.random() > 0.7 ? (Math.random() > 0.5 ? 1 : -1) : 0;
+                criticalAlerts.textContent = Math.max(0, current + change);
+            }
+        }, 30000); // Update every 30 seconds
+    </script>
     </body>
 </html>
